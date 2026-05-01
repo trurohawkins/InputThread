@@ -1,3 +1,6 @@
+#ifndef INPUT
+#define INPUT
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -5,3 +8,5 @@
 
 void setRaw(int state);
 int kbhit();
+
+#endif
