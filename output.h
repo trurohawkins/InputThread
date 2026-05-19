@@ -43,4 +43,6 @@ Screen *allocScreen(int width, int height);
 void freeScreen(Screen *s);
 
 void windowResizeCallback(int sig);
+
+void debugWrite(char *message);
 #endif

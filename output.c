@@ -11,11 +11,6 @@ void initScreen() {
 	printf("\033[?25l"); // hide cursor
 	fflush(stdout);
 	makeScreens();
-}
-
-void render() {
-	printf("\033[0m"); //reset colors
-	printf("\033[2J"); // clear screen
 	Glyph g;
 	g.fr = 0;
 	g.fg = 150;
@@ -26,8 +21,21 @@ void render() {
 	g.bb = 60;
 
 	g.symbol = '@';
+	bufferA->content[(bufferA->width * bufferA->height) / 2] = g;
+}
 
-	renderGlyph(g, bufferA->width/2, bufferA->height/2);
+void render() {
+	printf("\033[0m"); //reset colors
+	printf("\033[2J"); // clear screen
+
+	for (int i = 0; i < bufferA->width * bufferA->height; i++) {
+		Glyph g = bufferA->content[i];
+		if (g.symbol != 0) {
+			int y = i / bufferA->width;
+			int x = i - (y * bufferA->width);
+			renderGlyph(g, x, y);
+		}
+	}
 }
 
 void renderGlyph(Glyph gly, int px, int py) {
@@ -81,10 +89,10 @@ void makeScreens() {
 }
 
 Screen *allocScreen(int width, int height) {
-	Screen *s = malloc(sizeof(Screen));
+	Screen *s = calloc(1, sizeof(Screen));
 	s->width = width;
 	s->height = height;
-	s->content = malloc(sizeof(Glyph) * width * height);
+	s->content = calloc(width * height, sizeof(Glyph));
 	return s;
 }
 
@@ -98,3 +106,9 @@ void windowResizeCallback(int sig) {
 	atomic_store(&newRender, 1);
 }
 
+void debugWrite(char *message) {
+	FILE *fptr;
+	fptr = fopen("debug.log", "a");
+	fprintf(fptr, message);
+	fclose(fptr);
+}
