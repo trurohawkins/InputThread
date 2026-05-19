@@ -1,21 +1,54 @@
 #include "input.h"
 
+PollHandler inputHandler;
+
+void initTermInput() {
+	setRaw(1);
+	inputHandler.fd = STDIN_FILENO;
+	inputHandler.func = &checkInput;
+	addFdToPoll(&inputHandler);
+	int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+	fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
+}
+
+static struct termios original;
+
 void setRaw(int state) {
-	struct termios ttystate;
-	//get the terminal state
-	tcgetattr(STDIN_FILENO, &ttystate);
 	if (state == 1) {
+		struct termios ttystate;
+		//get the terminal state
+		tcgetattr(STDIN_FILENO, &original);
+		ttystate = original;
 		//turn off canonical mode
 		ttystate.c_lflag &= ~(ICANON | ECHO);
 		//minimum number of input read
-		ttystate.c_cc[VMIN] = 1;
+		ttystate.c_cc[VMIN] = 0;
 		ttystate.c_cc[VTIME] = 0;
+		//set the terminal attributes
+		tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
 	} else if (state == 0) {
 		//turn on canonical mode
-		ttystate.c_lflag |= ICANON | ECHO;
+		//ttystate.c_lflag |= ICANON | ECHO;
+		tcsetattr(STDIN_FILENO, TCSANOW, &original);
 	}
-	//set the terminal attributes
-	tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
+}
+
+void checkInput() {
+	char c;
+	while (true) {
+		ssize_t r = read(STDIN_FILENO, &c, 1);
+		if (r == 1) {
+			pushEvent(STDIN_FILENO, c);
+		} else if (r == -1 && errno == EAGAIN) {
+			break;
+		} else {
+			break;
+		}
+	}
+}
+
+void exitTermInput() {
+	setRaw(0);
 }
 
 int kbhit() {

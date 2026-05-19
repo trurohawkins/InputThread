@@ -5,8 +5,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <termios.h>
+#include <fcntl.h>
+#include <errno.h>
 
+#include "core.h"
+
+void initTermInput();
 void setRaw(int state);
-int kbhit();
+void checkInput();
+void exitTermInput();
 
+int kbhit();
 #endif

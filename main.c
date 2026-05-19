@@ -1,12 +1,31 @@
 #include "threads.h"
+#include "core.h"
 #include "input.h"
 #include "output.h"
 
-#include <errno.h>
 
-atomic_int running = 0;
+void *outputLoop(void *data);
 
-void *outputThread(void *data) {
+int main() {
+	initCore();
+	
+	pthread_t gameThread = createThread(gameLoop, NULL, false);
+	//pthread_t outputThread = createThread(outputLoop, NULL, false);
+	
+	initTermInput();
+	initScreen();
+
+	coreLoop();
+
+	printf("main exiting\n");
+	pthread_join(gameThread, NULL);
+	//pthread_join(outputThread, NULL);
+	exitCore();
+	exitTermInput();
+	return 0;
+}
+
+void *outputLoop(void *data) {
 	printf("thread created\n");
 	
 	while (atomic_load(&running)) {
@@ -15,35 +34,4 @@ void *outputThread(void *data) {
 
 	printf("thread exiting\n");
 	return NULL;
-}
-
-int main() {
-	running = 1;
-	pthread_t thread0 = createThread(outputThread, NULL, false);
-	setRaw(1);
-	initScreen();
-	char c;
-	while(true) {
-		ssize_t r = read(STDIN_FILENO, &c, 1);
-		if (r == 1) {
-			if (c == 27) {
-				break;
-			} else {
-				printf("%c\n", c);
-			}
-		} else if (r == -1) {
-			if (errno == EINTR) {
-				printf("EINTR error\n");
-				continue;
-			} else {
-				break;
-			}
-		}
-	}
-	printf("main exiting\n");
-	atomic_store(&running, 0);
-
-	pthread_join(thread0, NULL);
-	setRaw(0);
-	return 0;
 }
