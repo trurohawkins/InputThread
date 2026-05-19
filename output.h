@@ -37,6 +37,7 @@ void exitScreen();
 
 void *outputLoop(void *data);
 
+void renderGlyph(Glyph gly, int px, int py);
 void makeScreens();
 Screen *allocScreen(int width, int height);
 void freeScreen(Screen *s);

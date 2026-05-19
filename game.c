@@ -2,6 +2,7 @@ void *gameLoop(void *data) {
 	bool gameRunning = true;
 	while (gameRunning) {
 		SystemEvent se;
+		bool eventDone = false;//reduces busy loop load
 		while (popEvent(&se)) {
 			if (se.type == STDIN_FILENO) {
 				if (se.data == 27) {
@@ -10,6 +11,10 @@ void *gameLoop(void *data) {
 					wakeEvent();
 				}
 			}
+			eventDone = true;
+		}
+		if (!eventDone) {
+			usleep(1000);
 		}
 	}
 }

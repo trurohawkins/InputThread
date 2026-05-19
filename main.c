@@ -6,12 +6,11 @@
 int main() {
 	initCore();
 	
-	pthread_t gameThread = createThread(gameLoop, NULL, false);
-	pthread_t outputThread = createThread(outputLoop, NULL, false);
-	
 	initTermInput();
 	initScreen();
 
+	pthread_t gameThread = createThread(gameLoop, NULL, false);
+	pthread_t outputThread = createThread(outputLoop, NULL, false);
 	coreLoop();
 
 	pthread_join(gameThread, NULL);
