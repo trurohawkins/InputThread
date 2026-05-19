@@ -12,7 +12,6 @@ void *gameLoop(void *data) {
 			}
 		}
 	}
-	printf("game loop over\n");
 }
 
 

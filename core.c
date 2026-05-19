@@ -1,6 +1,5 @@
 #include "core.h"
 
-bool coreRunning = true;
 //used by poll handlers;
 void checkRunning();
 
@@ -34,9 +33,9 @@ void exitCore() {
 }
 
 void coreLoop() {
-	printf("core loop running\n");
-	while(coreRunning) {//atomic_load_explicit(&running, memory_order_acquire)) {
-		int n = epoll_wait(epfd, polls, 16, -1);
+	while (atomic_load_explicit(&running, memory_order_acquire)) {
+		//int n = epoll_wait(epfd, polls, 16, 100); //use for test
+		int n = epoll_wait(epfd, polls, 16, -1); // use for priduction
 		if (n == -1) {
 			if (errno == EINTR) {
 				printf("EINTR error\n");
@@ -75,7 +74,8 @@ void wakeEvent() {
 
 void checkRunning() {
 	if (!atomic_load_explicit(&running, memory_order_acquire)) {
-		coreRunning = false;
+		uint64_t v;
+		read(exitHandler.fd, &v, sizeof(v));
 	}
 }
 
