@@ -21,7 +21,11 @@ void initScreen() {
 	g.bb = 60;
 
 	g.symbol = '@';
-	bufferA->content[(bufferA->width * bufferA->height) / 2] = g;
+	//renderGlyph(g, bufferA->width, bufferA->height);
+	for (int i = 0; i < bufferA->width * bufferB->height; i++) {
+		bufferA->content[i] = g;
+	}
+	//bufferA->content[(bufferA->width * bufferA->height) / 2] = g;
 }
 
 void render() {
@@ -33,16 +37,17 @@ void render() {
 		if (g.symbol != 0) {
 			int y = i / bufferA->width;
 			int x = i - (y * bufferA->width);
-			renderGlyph(g, x, y);
+			renderGlyph(g, x+1, y+1);
 		}
 	}
+	fflush(stdout);
 }
 
 void renderGlyph(Glyph gly, int px, int py) {
-	printf("\033[%d;%dH", px, py);
+	printf("\033[%d;%dH", py, px);
 	printf("\033[38;2;%d;%d;%dm", gly.fr, gly.fg, gly.fb);
 	printf("\033[48;2;%d;%d;%dm", gly.br, gly.bg, gly.bb);
-	printf("%c\n", gly.symbol);
+	printf("%c", gly.symbol);
 }
 
 void *outputLoop(void *data) {
@@ -84,8 +89,8 @@ void makeScreens() {
 		freeScreen(bufferB);
 	}
 	// create new buffers
-	bufferA = allocScreen(w.ws_row, w.ws_col);
-	bufferB = allocScreen(w.ws_row, w.ws_col);
+	bufferA = allocScreen(w.ws_col, w.ws_row);
+	bufferB = allocScreen(w.ws_col, w.ws_row);
 }
 
 Screen *allocScreen(int width, int height) {
