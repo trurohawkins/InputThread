@@ -2,6 +2,7 @@
 #include "core.h"
 #include "input.h"
 #include "output.h"
+#include "game.h"
 
 int main() {
 	initCore();

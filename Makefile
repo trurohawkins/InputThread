@@ -38,18 +38,22 @@ helper.h:
 
 
 # Static lib
-libInput.a: input.o output.o core.o threads.o
+libInput.a: input.o output.o core.o threads.o game.o
 	ar rs $@ $^
 
 # Compiling
 main.o: main.c
 	gcc $(CFLAGS) -c main.c -o $@
 
+output.o: output.c output.h
+	gcc $(CFLAGS) -c output.c -o $@
+
+game.o: game.c game.h
+	gcc $(CFLAGS) -c game.c -o $@
+
 input.o: input.c input.h
 	gcc $(CFLAGS) -c input.c -o $@
 
-output.o: output.c output.h
-	gcc $(CFLAGS) -c output.c -o $@
 
 core.o: core.h core.c game.c game.h helper.h
 	gcc $(CFLAGS) -c core.c -o $@

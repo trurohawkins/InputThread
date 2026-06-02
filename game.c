@@ -1,6 +1,11 @@
+#include "game.h"
+
 int gpfd = 0;
 struct epoll_event gPolls[16];
 PollHandler eventHandler;
+
+SystemQueue events;
+
 bool gameRunning = true;
 
 void *gameLoop(void *data) {

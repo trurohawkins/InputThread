@@ -1,7 +1,10 @@
 #ifndef GAME
 #define GAME
 
-#include "poll.h"
+#include <stdint.h>
+
+#include "core.h"
+#include "helper.h"
 
 typedef struct {
 	int type;

@@ -3,7 +3,6 @@
 //used by poll handlers;
 void checkRunning();
 
-SystemQueue events;
 int epfd;
 PollHandler exitHandler;
 struct epoll_event polls[16];
@@ -87,5 +86,3 @@ void checkRunning() {
 		read(exitHandler.fd, &v, sizeof(v));
 	}
 }
-
-#include "game.c"
