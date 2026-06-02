@@ -17,7 +17,8 @@ typedef struct {
 bool initCore();
 void exitCore();
 void coreLoop();
-bool addFdToPoll(PollHandler* handler);
+bool addFdToCore(PollHandler* handler);
+bool addFdToPoll(PollHandler* handler, int poll);
 void wakeEvent();
 #endif
 

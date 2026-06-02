@@ -22,7 +22,7 @@ bool initCore() {
 		return false;
 	}
 	exitHandler.func = &checkRunning;
-	addFdToPoll(&exitHandler);
+	addFdToCore(&exitHandler);
 	running = 1;
 	return true;
 }
@@ -35,7 +35,7 @@ void exitCore() {
 void coreLoop() {
 	while (atomic_load_explicit(&running, memory_order_acquire)) {
 		//int n = epoll_wait(epfd, polls, 16, 100); //use for test
-		int n = epoll_wait(epfd, polls, 16, -1); // use for priduction
+		int n = epoll_wait(epfd, polls, 16, -1); // use for production
 		if (n == -1) {
 			if (errno == EINTR) {
 				printf("EINTR error\n");
@@ -52,12 +52,17 @@ void coreLoop() {
 	}
 }
 
-bool addFdToPoll(PollHandler *handler) {
+bool addFdToCore(PollHandler *handler) {
+	return addFdToPoll(handler, epfd);
+}
+
+
+bool addFdToPoll(PollHandler *handler, int poll) {
 	struct epoll_event ev = {
 		.events = EPOLLIN,
 		.data.ptr = handler
 	};
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, handler->fd, &ev) == -1) {
+	if (epoll_ctl(poll, EPOLL_CTL_ADD, handler->fd, &ev) == -1) {
 		perror("epoll_ctl");
 		return false;
 	} else {
@@ -73,6 +78,10 @@ void wakeEvent() {
 }
 
 void checkRunning() {
+	//drain exitHandler
+	uint64_t v;
+	read(exitHandler.fd, &v, sizeof(v));
+
 	if (!atomic_load_explicit(&running, memory_order_acquire)) {
 		uint64_t v;
 		read(exitHandler.fd, &v, sizeof(v));

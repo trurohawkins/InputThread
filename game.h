@@ -1,5 +1,8 @@
 #ifndef GAME
 #define GAME
+
+#include "poll.h"
+
 typedef struct {
 	int type;
 	int data;
@@ -7,6 +10,7 @@ typedef struct {
 
 DECLARE_SPSC(SystemEvent, SystemQueue, 256)
 void *gameLoop(void *data);
+void receiveEvent();
 void pushEvent(int type, int data);
 bool popEvent(SystemEvent *se);
 #endif

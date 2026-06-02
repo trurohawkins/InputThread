@@ -25,7 +25,7 @@ prod: LDFLAGS += $(DEV_LDFLAGS)
 prod: $(TARGET)
 
 # Linking
-$(TARGET): main.o libInput.a libHelper.a
+$(TARGET): helper.h libInput.a libHelper.a  main.o  
 	gcc main.o -o $@ $(LDFLAGS) libInput.a libHelper.a
 
 libHelper.a:
@@ -64,7 +64,7 @@ clean:
 	rm -f *.o *.a *.d
 
 fclean:
-	rm -f $(TARGET) *.o *.a *.d
+	rm -f $(TARGET) *.o *.a *.d helper.h
 
 fixTerminal:
 	stty sane
