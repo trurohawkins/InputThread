@@ -3,17 +3,19 @@
 int gpfd = 0;
 struct epoll_event gPolls[16];
 PollHandler eventHandler;
+PollHandler timerHandler;
 
 SystemQueue events;
 
 bool gameRunning = true;
 
-void *gameLoop(void *data) {
+bool initGame() {
 	gpfd = epoll_create1(0);
 	if (gpfd == -1) {
 		perror("epoll_create1 for game loop");
 		return false;
 	}
+	
 	eventHandler.fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
 	if (eventHandler.fd == -1) {
 		perror("eventfd game eventhandler");
@@ -24,6 +26,31 @@ void *gameLoop(void *data) {
 	eventHandler.func = &receiveEvent;
 	addFdToPoll(&eventHandler, gpfd);
 
+	timerHandler.fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+	if (timerHandler.fd == -1) {
+		perror("timerfd_create");
+		return false;
+	}
+
+	struct itimerspec ts = {
+		.it_interval = {
+			.tv_sec = 0,
+			.tv_nsec = 16666667
+		},
+		.it_value= {
+			.tv_sec = 0,
+			.tv_nsec = 16666667
+		}
+	};
+	if (timerfd_settime(timerHandler.fd, 0, &ts, NULL) == -1) {
+		perror("timeerfd_settime");
+		return false;
+	}
+	timerHandler.func = &gameSimulation;
+	addFdToPoll(&timerHandler, gpfd);
+}
+
+void *gameLoop(void *data) {
 	while (gameRunning) {
 		int n = epoll_wait(gpfd, gPolls, 16, -1);
 		if (n == -1) {
@@ -41,6 +68,19 @@ void *gameLoop(void *data) {
 		}
 	}
 }
+
+void gameSimulation() {
+	uint64_t expirations;
+
+	if (read(timerHandler.fd, &expirations, sizeof(expirations)) == -1) {
+		perror("readding timer fd for simulations");
+		return;
+	}
+	for (uint64_t i = 0; i < expirations; i++) {
+		printf("game simulation\n");
+	}
+}
+
 void receiveEvent() {
 	// drain event fd
 	uint64_t count;

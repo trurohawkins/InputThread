@@ -11,8 +11,10 @@ typedef struct {
 	int data;
 } SystemEvent;
 
-DECLARE_SPSC(SystemEvent, SystemQueue, 256)
+DECLARE_SPSC(SystemEvent, SystemQueue, 256);
+bool initGame();
 void *gameLoop(void *data);
+void gameSimulation();
 void receiveEvent();
 void pushEvent(int type, int data);
 bool popEvent(SystemEvent *se);
