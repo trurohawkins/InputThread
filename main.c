@@ -1,5 +1,6 @@
 #include "threads.h"
 #include "core.h"
+#include "timeWizard.h"
 #include "input.h"
 #include "output.h"
 #include "game.h"

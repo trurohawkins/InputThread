@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "timeWizard.h"
 #include "core.h"
 #include "helper.h"
 

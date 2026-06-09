@@ -6,7 +6,8 @@ PollHandler eventHandler;
 PollHandler timerHandler;
 
 SystemQueue events;
-
+TimeWizard wizboy;
+int ticksPerSecond = 60;
 bool gameRunning = true;
 
 bool initGame() {
@@ -32,14 +33,16 @@ bool initGame() {
 		return false;
 	}
 
+	uint64_t tickNS = 1000000000ULL / ticksPerSecond; 
+
 	struct itimerspec ts = {
 		.it_interval = {
 			.tv_sec = 0,
-			.tv_nsec = 16666667
+			.tv_nsec = tickNS
 		},
 		.it_value= {
 			.tv_sec = 0,
-			.tv_nsec = 16666667
+			.tv_nsec = tickNS
 		}
 	};
 	if (timerfd_settime(timerHandler.fd, 0, &ts, NULL) == -1) {
@@ -48,6 +51,9 @@ bool initGame() {
 	}
 	timerHandler.func = &gameSimulation;
 	addFdToPoll(&timerHandler, gpfd);
+
+	initTimeWizard(&wizboy, ticksPerSecond);
+	return true;
 }
 
 void *gameLoop(void *data) {
@@ -67,17 +73,31 @@ void *gameLoop(void *data) {
 			handler->func();
 		}
 	}
+
+	return NULL;
+}
+
+void simulateStep(float delta) {
+	printf("simulating time %f\n", delta);
 }
 
 void gameSimulation() {
 	uint64_t expirations;
-
+	// used for draining, can remov expirations
 	if (read(timerHandler.fd, &expirations, sizeof(expirations)) == -1) {
 		perror("readding timer fd for simulations");
 		return;
 	}
+	/*
 	for (uint64_t i = 0; i < expirations; i++) {
 		printf("game simulation\n");
+	}
+	*/
+	updateTimeWizard(&wizboy);
+	//paceFunction(&wizboy, simulateStep);
+	int steps = consumeTicks(&wizboy);
+	for (int i = 0; i < steps; i++) {
+		simulateStep(wizboy.dt);
 	}
 }
 
