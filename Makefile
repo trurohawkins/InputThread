@@ -20,8 +20,8 @@ tsan: CFLAGS += $(TSAN_CFLAGS)
 tsan: LDFLAGS += $(TSAN_LDFLAGS)
 tsan: $(TARGET)
 
-prod: CFLAGS += $(PROD_FLAGS)
-prod: LDFLAGS += $(DEV_LDFLAGS)
+prod: CFLAGS += $(PROD_CFLAGS)
+prod: LDFLAGS += $(PROD_LDFLAGS)
 prod: $(TARGET)
 
 # Linking

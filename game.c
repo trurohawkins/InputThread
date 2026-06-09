@@ -1,9 +1,13 @@
 #include "game.h"
 
-int gpfd = 0;
+int gpfd = -1;
 struct epoll_event gPolls[16];
-PollHandler eventHandler;
-PollHandler timerHandler;
+PollHandler eventHandler = {
+	.fd = -1
+};
+PollHandler timerHandler = {
+	.fd = -1
+};	
 
 SystemQueue events;
 TimeWizard wizboy;
@@ -16,7 +20,7 @@ bool initGame() {
 		perror("epoll_create1 for game loop");
 		return false;
 	}
-	
+
 	eventHandler.fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
 	if (eventHandler.fd == -1) {
 		perror("eventfd game eventhandler");
@@ -77,6 +81,18 @@ void *gameLoop(void *data) {
 	return NULL;
 }
 
+void exitGame() {
+	if (timerHandler.fd = -1) {
+		close (timerHandler.fd);
+	}
+	if (eventHandler.fd != -1) {
+		close (eventHandler.fd);
+	}
+	if (gpfd != -1) {
+		close(gpfd);
+	}	
+}
+
 void simulateStep(float delta) {
 	printf("simulating time %f\n", delta);
 }
@@ -89,10 +105,10 @@ void gameSimulation() {
 		return;
 	}
 	/*
-	for (uint64_t i = 0; i < expirations; i++) {
-		printf("game simulation\n");
-	}
-	*/
+		 for (uint64_t i = 0; i < expirations; i++) {
+		 printf("game simulation\n");
+		 }
+		 */
 	updateTimeWizard(&wizboy);
 	//paceFunction(&wizboy, simulateStep);
 	int steps = consumeTicks(&wizboy);
@@ -105,7 +121,7 @@ void receiveEvent() {
 	// drain event fd
 	uint64_t count;
 	read(eventHandler.fd, &count, sizeof(count));
-	
+
 	// read events in queue
 	SystemEvent se;
 	while (popEvent(&se)) {

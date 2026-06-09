@@ -19,8 +19,9 @@ int main() {
 
 	pthread_join(gameThread, NULL);
 	//pthread_join(outputThread, NULL);
-
+	
 	exitCore();
+	exitGame();
 	exitTermInput();
 	exitScreen();
 	return 0;
