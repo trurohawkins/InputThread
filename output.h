@@ -10,9 +10,10 @@
 #include <stdlib.h>
 
 #include "core.h"
-
+#include "renderFrame.h"
 extern atomic_int windowResized;
 
+/*
 typedef struct {
 	char symbol;
 
@@ -24,6 +25,7 @@ typedef struct {
 	uint8_t bg;
 	uint8_t bb;
 } Glyph;
+*/
 
 typedef struct {
 	int width;
@@ -36,7 +38,7 @@ bool initScreen();
 void exitScreen();
 
 void *outputLoop(void *data);
-void render();
+void render(RenderFrame *frame);
 
 void renderGlyph(Glyph gly, int px, int py);
 void makeScreens();
@@ -45,6 +47,6 @@ void freeScreen(Screen *s);
 
 void windowResizeCallback(int sig);
 void checkNewRender();
+void setNewRender();
 
-void debugWrite(char *message);
 #endif

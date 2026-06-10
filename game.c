@@ -4,7 +4,6 @@ PollHandler gameTimer = {
 	.fd = -1
 };	
 
-SystemQueue events;
 TimeWizard gameWiz;
 int ticksPerSecond = 60;
 bool gameRunning = true;
@@ -31,10 +30,13 @@ void exitGame() {
 		close (gameTimer.fd);
 	}
 	closePoll(gamePoll);
+	if (frames[0].content != 0) {
+		freeRenderFrames();
+	}
 }
 
 void simulateStep(float delta) {
-	printf("simulating time %f\n", delta);
+	//printf("simulating time %f\n", delta);
 }
 
 void gameSimulation() {
@@ -64,34 +66,37 @@ void receiveEvent() {
 	SystemEvent se;
 	while (popEvent(&se)) {
 		if (se.type == STDIN_FILENO) {
-			if (se.data == 27) {
+			char c = 0;
+			memcpy(&c, se.data, se.size);
+			if (c == 27) {
 				gameRunning = false;
 				atomic_store_explicit(&running, false, memory_order_release);
 				wakeEvent();
 			}
+		} else if (se.type == 1) {
+			int data[2];
+			memcpy(&data, se.data, se.size);
+			if (frames[0].content != 0) {
+				freeRenderFrames();
+			}
+			makeRenderFrames(data[0], data[1]);
+			//populate B
+			Glyph g;
+			g.fr = 0;
+			g.fg = 150;
+			g.fb = 100;
+
+			g.br = 85;
+			g.bg = 50;
+			g.bb = 60;
+
+			g.symbol = '@';
+			int next = atomic_load(&renderReadIndex);
+			int newFrame = (next + 1) % NUM_FRAMES;
+			frames[newFrame].content[0] = g;
+			atomic_store_explicit(&renderWriteIndex, newFrame, memory_order_release);
+			//signal redraw
+			setNewRender();
 		}
 	}
 }
-
-
-void pushEvent(int type, int data) {
-	SystemEvent se;
-	se.type = type;
-	se.data = data;
-
-	AqPushResult res = SystemQueue_aqPush(&events, se);
-	if (res == AQ_PUSH_SUCCESS_EMPTY) {
-		uint64_t v = 1;
-		if (write(gamePoll.handler.fd, &v, sizeof(v)) == -1) {
-			perror("write to event");
-		}
-	} else if (res == AQ_PUSH_FAILED) {
-		perror("event queue push fail");
-	}
-}
-
-bool popEvent(SystemEvent *se) {
-	bool ret = SystemQueue_aqPop(&events, se);
-	return ret;
-}
-

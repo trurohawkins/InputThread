@@ -1,18 +1,16 @@
 #include "output.h"
 
 atomic_int windowResized = 0;
-atomic_int newRender = 1;
+atomic_int newRender = 0;
 Screen *bufferA = 0;
 Screen *bufferB = 0;
 
 bool initScreen() {
 	signal(SIGWINCH, windowResizeCallback);
 	initPollSystem(&outputPoll, &checkNewRender);
-	/*
-		 printf("\033[3J"); // clear screen
-		 printf("\033[?25l"); // hide cursor
-		 fflush(stdout);
-		 */
+	printf("\033[3J"); // clear screen
+	printf("\033[?25l"); // hide cursor
+	fflush(stdout);
 	makeScreens();
 
 
@@ -33,19 +31,15 @@ bool initScreen() {
 	//bufferA->content[(bufferA->width * bufferA->height) / 2] = g;
 }
 
-void render() {
-	printf("rendering\n");
-	return;
+void render(RenderFrame *frame) {
 	printf("\033[0m"); //reset colors
 	printf("\033[2J"); // clear screen
 
-	for (int i = 0; i < bufferA->width * bufferA->height; i++) {
-		Glyph g = bufferA->content[i];
-		if (g.symbol != 0) {
-			int y = i / bufferA->width;
-			int x = i - (y * bufferA->width);
-			renderGlyph(g, x+1, y+1);
-		}
+	for (int i = 0; i < frame->width * frame->height; i++) {
+		Glyph g = frame->content[i];
+		int y = i / frame->width;
+		int x = i - (y * frame->width);
+		renderGlyph(g, x+1, y+1);
 	}
 	fflush(stdout);
 }
@@ -70,7 +64,7 @@ void exitScreen() {
 	fflush(stdout);
 	freeScreen(bufferA);
 	freeScreen(bufferB);
-	
+
 	closePoll(outputPoll);
 }
 
@@ -89,6 +83,9 @@ void makeScreens() {
 	// create new buffers
 	bufferA = allocScreen(w.ws_col, w.ws_row);
 	bufferB = allocScreen(w.ws_col, w.ws_row);
+
+	int data[2] = {w.ws_col, w.ws_row};
+	pushEvent(1, data, sizeof(data));
 }
 
 Screen *allocScreen(int width, int height) {
@@ -106,7 +103,15 @@ void freeScreen(Screen *s) {
 
 void windowResizeCallback(int sig) {
 	atomic_store_explicit(&windowResized, 1, memory_order_release);
+	setNewRender();
+}
+
+void setNewRender() {
 	atomic_store_explicit(&newRender, 1, memory_order_release);
+	uint64_t v = 1;
+	if (write(outputPoll.handler.fd, &v, sizeof(v)) == -1) {
+		perror("write outpoll fd");
+	}
 }
 
 void checkNewRender() {
@@ -114,14 +119,10 @@ void checkNewRender() {
 		makeScreens();
 	}
 	if (atomic_exchange(&newRender, 0)) {
-		render();
+		int frame = atomic_load_explicit(&renderWriteIndex, memory_order_acquire);
+		atomic_store_explicit(&renderReadIndex, frame, memory_order_release);
+		RenderFrame * f = &frames[frame];
+		render(f);
 	}
 }
 
-
-void debugWrite(char *message) {
-	FILE *fptr;
-	fptr = fopen("debug.log", "a");
-	fprintf(fptr, message);
-	fclose(fptr);
-}

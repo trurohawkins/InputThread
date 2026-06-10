@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
+#include <sys/timerfd.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -22,4 +23,5 @@ bool addFdToPoll(PollHandler* handler, int poll);
 bool runPolls(int pfd, struct epoll_event* polls, int count);
 void closePoll(PollSystem poll);
 
+bool initTimerFd(PollHandler *handler, int ticksPerSecond, void (*func)(void));
 #endif

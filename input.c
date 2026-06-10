@@ -38,7 +38,7 @@ void checkInput() {
 	while (true) {
 		ssize_t r = read(STDIN_FILENO, &c, 1);
 		if (r == 1) {
-			pushEvent(STDIN_FILENO, c);
+			pushEvent(STDIN_FILENO, &c, sizeof(c));
 		} else if (r == -1 && errno == EAGAIN) {
 			break;
 		} else {

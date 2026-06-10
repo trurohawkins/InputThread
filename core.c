@@ -26,6 +26,8 @@ PollSystem gamePoll = {
 	},
 };
 
+SystemQueue events;
+
 bool initCore() {
 	initPollSystem(&corePoll, &checkRunning);
 	running = 1;
@@ -57,6 +59,13 @@ void wakeEvent() {
 	}
 }
 
+void debugWrite(char *message) {
+	FILE *fptr;
+	fptr = fopen("debug.log", "a");
+	fprintf(fptr, message);
+	fclose(fptr);
+}
+
 void checkRunning() {
 	//drain corePoll.handler
 	uint64_t v;
@@ -72,31 +81,31 @@ bool addFdToCore(PollHandler *handler) {
 	return addFdToPoll(handler, corePoll.pfd);
 }
 
-
-bool initTimerFd(PollHandler *handler, int ticksPerSecond, void (*func)(void)) {
-	handler->fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-	if (handler->fd == -1) {
-		perror("timerfd_create");
+bool pushEvent(int type, const void *data, uint32_t size) {
+	if (size > EVENT_BUFFER_SIZE) {
 		return false;
 	}
+	SystemEvent se;
+	se.type = type;
+	se.size = size;
+	memcpy(se.data, data, size);
 
-	uint64_t tickNS = 1000000000ULL / ticksPerSecond; 
-
-	struct itimerspec ts = {
-		.it_interval = {
-			.tv_sec = 0,
-			.tv_nsec = tickNS
-		},
-		.it_value= {
-			.tv_sec = 0,
-			.tv_nsec = tickNS
+	AqPushResult res = SystemQueue_aqPush(&events, se);
+	if (res == AQ_PUSH_SUCCESS_EMPTY) {
+		uint64_t v = 1;
+		if (write(gamePoll.handler.fd, &v, sizeof(v)) == -1) {
+			perror("write to event");
+			return false;
 		}
-	};
-	if (timerfd_settime(handler->fd, 0, &ts, NULL) == -1) {
-		perror("timeerfd_settime");
+	} else if (res == AQ_PUSH_FAILED) {
+		perror("event queue push fail");
 		return false;
 	}
-	handler->func = func;
 	return true;
+}
+
+bool popEvent(SystemEvent *se) {
+	bool ret = SystemQueue_aqPop(&events, se);
+	return ret;
 }
 
