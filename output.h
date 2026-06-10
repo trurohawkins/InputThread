@@ -32,10 +32,11 @@ typedef struct {
 	Glyph *content;
 } Screen;
 
-void initScreen();
+bool initScreen();
 void exitScreen();
 
 void *outputLoop(void *data);
+void render();
 
 void renderGlyph(Glyph gly, int px, int py);
 void makeScreens();
@@ -43,6 +44,7 @@ Screen *allocScreen(int width, int height);
 void freeScreen(Screen *s);
 
 void windowResizeCallback(int sig);
+void checkNewRender();
 
 void debugWrite(char *message);
 #endif

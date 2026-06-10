@@ -38,7 +38,7 @@ helper.h:
 
 
 # Static lib
-libInput.a: input.o output.o core.o threads.o game.o timeWizard.o
+libInput.a: input.o output.o core.o threads.o game.o timeWizard.o poll.o
 	ar rs $@ $^
 
 # Compiling
@@ -55,8 +55,11 @@ input.o: input.c input.h
 	gcc $(CFLAGS) -c input.c -o $@
 
 
-core.o: core.h core.c game.c game.h helper.h
+core.o: core.h core.c helper.h
 	gcc $(CFLAGS) -c core.c -o $@
+
+poll.o: poll.c poll.h
+	gcc $(CFLAGS) -c poll.c -o $@
 
 timeWizard.o: timeWizard.c timeWizard.h
 	gcc $(CFLAGS) -c timeWizard.c -o $@

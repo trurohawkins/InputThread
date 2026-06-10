@@ -6,20 +6,19 @@
 #include <sys/timerfd.h>
 
 #include "helper.h"
+#include "poll.h"
 #include "game.h"
 
 extern atomic_int running;
 
-typedef struct {
-	int fd;
-	void (*func)(void);
-} PollHandler;
+extern PollSystem outputPoll;
+extern PollSystem gamePoll;
 
 bool initCore();
 void exitCore();
 void coreLoop();
 bool addFdToCore(PollHandler* handler);
-bool addFdToPoll(PollHandler* handler, int poll);
+bool initTimerFd(PollHandler *handler, int ticksPerSecond, void (*func)(void));
 void wakeEvent();
 #endif
 

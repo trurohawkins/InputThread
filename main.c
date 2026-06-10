@@ -7,18 +7,19 @@
 
 int main() {
 	initCore();
-	
+
 	initTermInput();
 	initScreen();
 
 	initGame();
 
 	pthread_t gameThread = createThread(gameLoop, NULL, false);
-	//pthread_t outputThread = createThread(outputLoop, NULL, false);
+	pthread_t outputThread = createThread(outputLoop, NULL, false);
+
 	coreLoop();
 
 	pthread_join(gameThread, NULL);
-	//pthread_join(outputThread, NULL);
+	pthread_join(outputThread, NULL);
 	
 	exitCore();
 	exitGame();

@@ -5,12 +5,17 @@ atomic_int newRender = 1;
 Screen *bufferA = 0;
 Screen *bufferB = 0;
 
-void initScreen() {
+bool initScreen() {
 	signal(SIGWINCH, windowResizeCallback);
-	printf("\033[3J"); // clear screen
-	printf("\033[?25l"); // hide cursor
-	fflush(stdout);
+	initPollSystem(&outputPoll, &checkNewRender);
+	/*
+		 printf("\033[3J"); // clear screen
+		 printf("\033[?25l"); // hide cursor
+		 fflush(stdout);
+		 */
 	makeScreens();
+
+
 	Glyph g;
 	g.fr = 0;
 	g.fg = 150;
@@ -29,6 +34,8 @@ void initScreen() {
 }
 
 void render() {
+	printf("rendering\n");
+	return;
 	printf("\033[0m"); //reset colors
 	printf("\033[2J"); // clear screen
 
@@ -52,18 +59,7 @@ void renderGlyph(Glyph gly, int px, int py) {
 
 void *outputLoop(void *data) {
 	while (atomic_load_explicit(&running, memory_order_acquire)) {
-		bool actionTaken = false;
-		if (atomic_exchange(&windowResized, 0)) {
-			makeScreens();
-			actionTaken = true;
-		}
-		if (atomic_exchange(&newRender, 0)) {
-			render();
-			actionTaken = true;
-		}
-		if (!actionTaken) {
-			usleep(1000);
-		}
+		runPolls(outputPoll.pfd, outputPoll.polls, 16);
 	}
 	return NULL;
 }
@@ -74,6 +70,8 @@ void exitScreen() {
 	fflush(stdout);
 	freeScreen(bufferA);
 	freeScreen(bufferB);
+	
+	closePoll(outputPoll);
 }
 
 void makeScreens() {
@@ -107,9 +105,19 @@ void freeScreen(Screen *s) {
 }
 
 void windowResizeCallback(int sig) {
-	atomic_store(&windowResized, 1);
-	atomic_store(&newRender, 1);
+	atomic_store_explicit(&windowResized, 1, memory_order_release);
+	atomic_store_explicit(&newRender, 1, memory_order_release);
 }
+
+void checkNewRender() {
+	if (atomic_exchange(&windowResized, 0)) {
+		makeScreens();
+	}
+	if (atomic_exchange(&newRender, 0)) {
+		render();
+	}
+}
+
 
 void debugWrite(char *message) {
 	FILE *fptr;
