@@ -13,5 +13,7 @@ bool initGame();
 void *gameLoop(void *data);
 void exitGame();
 void gameSimulation();
+void simulateStep(float delta);
+void renderFrame();
 void receiveEvent();
 #endif

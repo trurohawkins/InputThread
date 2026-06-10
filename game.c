@@ -35,8 +35,20 @@ void exitGame() {
 	}
 }
 
+int pos = 0;
+float interval = 0.2;
+float counter = 0;
+int worldSize = 0;
+
 void simulateStep(float delta) {
 	//printf("simulating time %f\n", delta);
+	if (counter + delta >= interval) {
+		counter -= interval;
+		pos = (pos + 1) % worldSize;
+		renderFrame();
+	} else {
+		counter += delta;
+	}
 }
 
 void gameSimulation() {
@@ -80,23 +92,44 @@ void receiveEvent() {
 				freeRenderFrames();
 			}
 			makeRenderFrames(data[0], data[1]);
-			//populate B
-			Glyph g;
-			g.fr = 0;
-			g.fg = 150;
-			g.fb = 100;
-
-			g.br = 85;
-			g.bg = 50;
-			g.bb = 60;
-
-			g.symbol = '@';
-			int next = atomic_load(&renderReadIndex);
-			int newFrame = (next + 1) % NUM_FRAMES;
-			frames[newFrame].content[0] = g;
-			atomic_store_explicit(&renderWriteIndex, newFrame, memory_order_release);
-			//signal redraw
-			setNewRender();
+			worldSize = data[0] * data[1];
 		}
 	}
+}
+
+void renderFrame() {
+	// atomic load next frame
+	int next = atomic_load(&renderReadIndex);
+	int newFrame = (next + 1) % NUM_FRAMES;
+	//populate B
+	Glyph g;
+	g.fr = 0;
+	g.fg = 150;
+	g.fb = 100;
+
+	g.br = 85;
+	g.bg = 50;
+	g.bb = 60;
+
+	g.symbol = '@';
+	Glyph empty = {
+		.fr = 0,
+		.fg = 0,
+		.fb = 0,
+		.br = 0,
+		.bg = 0,
+		.bb = 0,
+
+		.symbol = ' '
+	};
+	for (int i = 0; i < worldSize; i++) {
+		if (i != pos) {
+			frames[newFrame].content[i] = empty;
+		} else {
+			frames[newFrame].content[pos] = g;
+		}
+	}
+	atomic_store_explicit(&renderWriteIndex, newFrame, memory_order_release);
+	//signal redraw
+	setNewRender();
 }
