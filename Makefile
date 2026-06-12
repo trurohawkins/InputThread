@@ -24,9 +24,11 @@ prod: CFLAGS += $(PROD_CFLAGS)
 prod: LDFLAGS += $(PROD_LDFLAGS)
 prod: $(TARGET)
 
+FD = Form/
+
 # Linking
-$(TARGET): helper.h libInput.a libHelper.a  main.o  
-	gcc main.o -o $@ $(LDFLAGS) libInput.a libHelper.a
+$(TARGET): helper.h libForm.a libInput.a libHelper.a  main.o  
+	gcc main.o -o $@ $(LDFLAGS) libForm.a libInput.a libHelper.a
 
 libHelper.a:
 	$(MAKE) -C ../FormNetwork/
@@ -38,7 +40,10 @@ helper.h:
 
 
 # Static lib
-libInput.a: input.o output.o core.o threads.o game.o timeWizard.o poll.o renderFrame.o
+libInput.a: input.o output.o core.o threads.o timeWizard.o poll.o renderFrame.o
+	ar rs $@ $^
+
+libForm.a: form.o cell.o world.o game.o  
 	ar rs $@ $^
 
 # Compiling
@@ -51,12 +56,22 @@ output.o: output.c output.h
 renderFrame.o: renderFrame.c renderFrame.h
 	gcc $(CFLAGS) -c renderFrame.c -o $@
 
-game.o: game.c game.h
-	gcc $(CFLAGS) -c game.c -o $@
-
 input.o: input.c input.h
 	gcc $(CFLAGS) -c input.c -o $@
 
+
+# FORM
+game.o: $(FD)game.c $(FD)game.h
+	gcc $(CFLAGS) -c $(FD)game.c -o $@
+
+form.o: $(FD)form.c $(FD)form.h
+	gcc $(CFLAGS) -c $(FD)form.c -o $@
+
+cell.o: $(FD)cell.c $(FD)cell.h
+	gcc $(CFLAGS) -c $(FD)cell.c -o $@
+
+world.o: $(FD)world.c $(FD)world.h
+	gcc $(CFLAGS) -c $(FD)world.c -o $@
 
 core.o: core.h core.c helper.h
 	gcc $(CFLAGS) -c core.c -o $@

@@ -73,7 +73,6 @@ void makeScreens() {
 
 void windowResizeCallback(int sig) {
 	atomic_store_explicit(&windowResized, 1, memory_order_release);
-	setNewRender();
 }
 
 void setNewRender() {

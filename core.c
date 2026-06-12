@@ -54,8 +54,10 @@ void wakeEvent() {
 	if (write(corePoll.handler.fd, &v, sizeof(v)) == -1) {
 		perror("write wakeFd");
 	}
-	if (write(outputPoll.handler.fd, &v, sizeof(v)) == -1) {
-		perror("write outpoll fd");
+	if (outputPoll.handler.fd != -1) {
+		if (write(outputPoll.handler.fd, &v, sizeof(v)) == -1) {
+			perror("write outpoll fd");
+		}
 	}
 }
 

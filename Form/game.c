@@ -7,6 +7,12 @@ PollHandler gameTimer = {
 TimeWizard gameWiz;
 int ticksPerSecond = 60;
 bool gameRunning = true;
+int worldX = 10;
+int worldY = 10;
+int frameX = 10;
+int frameY = 10;
+
+Form *f = 0;
 
 bool initGame() {
 	initPollSystem(&gamePoll, &receiveEvent);
@@ -15,6 +21,17 @@ bool initGame() {
 	addFdToPoll(&gameTimer, gamePoll.pfd);
 
 	initTimeWizard(&gameWiz, ticksPerSecond);
+
+	makeWorld(worldX, worldY);
+
+	f = makeForm(0);
+	termSkin *skin = calloc(1, sizeof(termSkin));
+	skin->symbol = '@';
+	skin->r = 128;
+	skin->g = 128;
+	skin->b = 128;
+	f->skin = skin;
+	placeForm(f, 0, 0);
 	return true;
 }
 
@@ -33,18 +50,21 @@ void exitGame() {
 	if (frames[0].content != 0) {
 		freeRenderFrames();
 	}
+	freeWorld();
 }
 
 int pos = 0;
 float interval = 0.2;
 float counter = 0;
-int worldSize = 0;
+int worldSize = 100;
 
 void simulateStep(float delta) {
 	//printf("simulating time %f\n", delta);
 	if (counter + delta >= interval) {
 		counter -= interval;
-		pos = (pos + 1) % worldSize;
+		removeForm(f, f->pos[0], f->pos[1]);
+		f->pos[1] = (f->pos[1] + 1) % worldY;
+		placeForm(f, f->pos[0], f->pos[1]);
 		renderFrame();
 	} else {
 		counter += delta;
@@ -92,6 +112,8 @@ void receiveEvent() {
 				freeRenderFrames();
 			}
 			makeRenderFrames(data[0], data[1]);
+			frameX = data[0];
+			frameY = data[1];
 			worldSize = data[0] * data[1];
 		}
 	}
@@ -102,34 +124,40 @@ void renderFrame() {
 	int next = atomic_load(&renderReadIndex);
 	int newFrame = (next + 1) % NUM_FRAMES;
 	//populate B
-	Glyph g;
-	g.fr = 0;
-	g.fg = 150;
-	g.fb = 100;
-
-	g.br = 85;
-	g.bg = 50;
-	g.bb = 60;
-
-	g.symbol = '@';
 	Glyph empty = {
-		.fr = 0,
-		.fg = 0,
-		.fb = 0,
-		.br = 0,
-		.bg = 0,
-		.bb = 0,
+		.fr = 128,
+		.fg = 1,
+		.fb = 1,
+		.br = 1,
+		.bg = 1,
+		.bb = 1,
 
-		.symbol = ' '
+		.symbol = '!'
 	};
-	for (int i = 0; i < worldSize; i++) {
-		if (i != pos) {
-			frames[newFrame].content[i] = empty;
-		} else {
-			frames[newFrame].content[pos] = g;
+	for (int i = 0; i < frameX * frameY; i++) {
+		frames[newFrame].content[i] = empty;
+	}
+	for (int i = 0; i < worldX * worldY; i++) {
+		int fy = i / theWorld.x;//frames[newFrame].width;
+		int fx = (i - (fy * theWorld.x));
+		fy = theWorld.y - fy - 1;
+		Cell c = theWorld.map[i];
+		for (int j = 0; j < FORMS_PER_CELL; j++) {
+			Form *f = c.within[j];
+			if (f != 0 && f->skin != 0) {
+				termSkin skin = *((termSkin*)f->skin);
+				Glyph *g = &(frames[newFrame].content[(fy*frames[newFrame].width)+fx]);
+				g->symbol = skin.symbol;
+				g->fr = skin.r;
+				g->fg = skin.g;
+				g->fb = skin.b;
+				break;
+			}
 		}
 	}
-	atomic_store_explicit(&renderWriteIndex, newFrame, memory_order_release);
-	//signal redraw
-	setNewRender();
-}
+
+
+		atomic_store_explicit(&renderWriteIndex, newFrame, memory_order_release);
+		//signal redraw
+		setNewRender();
+	}
