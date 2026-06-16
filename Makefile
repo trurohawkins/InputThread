@@ -27,8 +27,8 @@ prod: $(TARGET)
 FD = Form/
 
 # Linking
-$(TARGET): helper.h libForm.a libInput.a libHelper.a  main.o  
-	gcc main.o -o $@ $(LDFLAGS) libForm.a libInput.a libHelper.a
+$(TARGET): helper.h libCore.a libForm.a libInput.a libHelper.a  main.o  
+	gcc main.o -o $@ $(LDFLAGS) libForm.a libInput.a libCore.a libHelper.a
 
 libHelper.a:
 	$(MAKE) -C ../FormNetwork/
@@ -40,10 +40,13 @@ helper.h:
 
 
 # Static lib
-libInput.a: input.o output.o core.o threads.o timeWizard.o poll.o renderFrame.o
+libForm.a: form.o cell.o world.o game.o  
 	ar rs $@ $^
 
-libForm.a: form.o cell.o world.o game.o  
+libInput.a: input.o output.o renderFrame.o
+	ar rs $@ $^
+
+libCore.a: core.o threads.o timeWizard.o poll.o
 	ar rs $@ $^
 
 # Compiling
