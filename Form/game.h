@@ -7,7 +7,6 @@
 #include "../core.h"
 
 #include "../renderFrame.h"
-#include "../output.h"
 #include "world.h"
 
 bool initGame();
@@ -15,13 +14,7 @@ void *gameLoop(void *data);
 void exitGame();
 void gameSimulation();
 void simulateStep(float delta);
-void renderFrame();
+void renderMap();
 void receiveEvent();
 
-typedef struct {
-	char symbol;
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-} termSkin;
 #endif

@@ -22,8 +22,6 @@ void render(RenderFrame *frame);
 void renderGlyph(Glyph gly, int px, int py);
 void makeScreens();
 
-void windowResizeCallback(int sig);
 void checkNewRender();
-void setNewRender();
 
 #endif

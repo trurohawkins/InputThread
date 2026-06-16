@@ -1,8 +1,5 @@
 #include "output.h"
 
-atomic_int windowResized = 0;
-atomic_int newRender = 0;
-
 bool initScreen() {
 	signal(SIGWINCH, windowResizeCallback);
 	
@@ -12,18 +9,6 @@ bool initScreen() {
 	printf("\033[?25l"); // hide cursor
 	fflush(stdout);
 	makeScreens();
-
-
-	Glyph g;
-	g.fr = 0;
-	g.fg = 150;
-	g.fb = 100;
-
-	g.br = 85;
-	g.bg = 50;
-	g.bb = 60;
-
-	g.symbol = '@';
 }
 
 void render(RenderFrame *frame) {
@@ -70,18 +55,6 @@ void makeScreens() {
 
 	int data[2] = {w.ws_col, w.ws_row};
 	pushEvent(1, data, sizeof(data));
-}
-
-void windowResizeCallback(int sig) {
-	atomic_store_explicit(&windowResized, 1, memory_order_release);
-}
-
-void setNewRender() {
-	atomic_store_explicit(&newRender, 1, memory_order_release);
-	uint64_t v = 1;
-	if (write(outputPoll.handler.fd, &v, sizeof(v)) == -1) {
-		perror("write outpoll fd");
-	}
 }
 
 void checkNewRender() {

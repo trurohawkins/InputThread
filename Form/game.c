@@ -11,7 +11,8 @@ int worldX = 30;
 int worldY = 30;
 int viewX = 20;
 int viewY = 10;
-
+int screenX = 0;
+int screenY = 0;
 Form *f = 0;
 
 bool initGame() {
@@ -25,7 +26,7 @@ bool initGame() {
 	makeWorld(worldX, worldY);
 
 	f = makeForm(0);
-	termSkin *skin = calloc(1, sizeof(termSkin));
+	Figure *skin = calloc(1, sizeof(Figure));
 	skin->symbol = '@';
 	skin->r = 128;
 	skin->g = 128;
@@ -56,7 +57,6 @@ void exitGame() {
 int pos = 0;
 float interval = 0.2;
 float counter = 0;
-int worldSize = 100;
 
 void simulateStep(float delta) {
 	//printf("simulating time %f\n", delta);
@@ -65,7 +65,7 @@ void simulateStep(float delta) {
 		removeForm(f, f->pos[0], f->pos[1]);
 		f->pos[1] = (f->pos[1] + 1) % worldY;
 		placeForm(f, f->pos[0], f->pos[1]);
-		renderFrame();
+		renderMap();
 	} else {
 		counter += delta;
 	}
@@ -111,41 +111,24 @@ void receiveEvent() {
 			if (frames[0].content != 0) {
 				freeRenderFrames();
 			}
+			screenX = data[0];
+			screenY = data[1];
 			makeRenderFrames(data[0], data[1]);
-			worldSize = data[0] * data[1];
 		}
 	}
 }
 
-void renderFrame() {
-	// atomic load next frame
-	int next = atomic_load(&renderReadIndex);
-	int newFrame = (next + 1) % NUM_FRAMES;
-	//populate B
+void renderMap() {
 	Glyph empty = {
-		.fr = 128,
-		.fg = 1,
-		.fb = 1,
-		.br = 1,
-		.bg = 1,
-		.bb = 1,
+		.br = 0,
+		.bg = 0,
+		.bb = 0,
 
 		.symbol = ' '
 	};
-	Glyph border = {
-		.fr = 128,
-		.fg = 1,
-		.fb = 1,
-		.br = 1,
-		.bg = 1,
-		.bb = 1,
-
-		.symbol = '/'
-	};
-	RenderFrame *frame = frames + newFrame;
-	for (int i = 0; i < frame->width * frame->height; i++) {
-		frames[newFrame].content[i] = border;
-	}
+	Glyph *glyphs = calloc(viewX * viewY, sizeof(Glyph));
+	int *poses = calloc(viewX * viewY, sizeof(int));
+	int count = 0;
 	for (int y = 0; y < viewY; y++) {
 		for (int x = 0; x < viewX; x++) {
 			int w = y * theWorld.y + x;
@@ -158,10 +141,12 @@ void renderFrame() {
 					break;
 				}
 			}
-			int fi = (y+frame->height/2-viewY/2) * frame->width + (x+frame->width/2-viewX/2);
-			Glyph *g = &frame->content[fi];
+			y = viewY - y - 1;
+			int screeni = (y+screenY/2-viewY/2) * screenX + (x+screenX/2-viewX/2);
+			poses[count] = screeni;
+			Glyph *g = &glyphs[count];//frame->content[fi];
 			if (form) {
-				termSkin skin = *((termSkin*)f->skin);
+				Figure skin = *((Figure*)f->skin);
 				g->symbol = skin.symbol;
 				g->fr = skin.r;
 				g->fg = skin.g;
@@ -169,9 +154,10 @@ void renderFrame() {
 			} else {
 				*g = empty;
 			}
+			count++;
 		}
 	}
-	atomic_store_explicit(&renderWriteIndex, newFrame, memory_order_release);
-	//signal redraw
-	setNewRender();
+	renderFrame(glyphs, poses, viewX * viewY);
+	free(glyphs);
+	free(poses);
 }
