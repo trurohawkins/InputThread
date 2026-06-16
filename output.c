@@ -28,7 +28,8 @@ bool initScreen() {
 
 void render(RenderFrame *frame) {
 	printf("\033[0m"); //reset colors
-	printf("\033[2J"); // clear screen
+	//printf("\033[2J"); // clear screen
+	printf("\033[H");//moves cursor to begining, reduces screen flicker
 
 	for (int i = 0; i < frame->width * frame->height; i++) {
 		Glyph g = frame->content[i];

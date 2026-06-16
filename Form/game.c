@@ -7,10 +7,10 @@ PollHandler gameTimer = {
 TimeWizard gameWiz;
 int ticksPerSecond = 60;
 bool gameRunning = true;
-int worldX = 10;
-int worldY = 10;
-int frameX = 10;
-int frameY = 10;
+int worldX = 30;
+int worldY = 30;
+int viewX = 20;
+int viewY = 10;
 
 Form *f = 0;
 
@@ -112,8 +112,6 @@ void receiveEvent() {
 				freeRenderFrames();
 			}
 			makeRenderFrames(data[0], data[1]);
-			frameX = data[0];
-			frameY = data[1];
 			worldSize = data[0] * data[1];
 		}
 	}
@@ -132,32 +130,48 @@ void renderFrame() {
 		.bg = 1,
 		.bb = 1,
 
-		.symbol = '!'
+		.symbol = ' '
 	};
-	for (int i = 0; i < frameX * frameY; i++) {
-		frames[newFrame].content[i] = empty;
+	Glyph border = {
+		.fr = 128,
+		.fg = 1,
+		.fb = 1,
+		.br = 1,
+		.bg = 1,
+		.bb = 1,
+
+		.symbol = '/'
+	};
+	RenderFrame *frame = frames + newFrame;
+	for (int i = 0; i < frame->width * frame->height; i++) {
+		frames[newFrame].content[i] = border;
 	}
-	for (int i = 0; i < worldX * worldY; i++) {
-		int fy = i / theWorld.x;//frames[newFrame].width;
-		int fx = (i - (fy * theWorld.x));
-		fy = theWorld.y - fy - 1;
-		Cell c = theWorld.map[i];
-		for (int j = 0; j < FORMS_PER_CELL; j++) {
-			Form *f = c.within[j];
-			if (f != 0 && f->skin != 0) {
+	for (int y = 0; y < viewY; y++) {
+		for (int x = 0; x < viewX; x++) {
+			int w = y * theWorld.y + x;
+			Cell c = theWorld.map[w];
+			Form *form = NULL;
+			for (int i = 0; i < FORMS_PER_CELL; i++) {
+				Form *f = c.within[i];
+				if (f != 0 && f->skin != 0) {
+					form = f;
+					break;
+				}
+			}
+			int fi = (y+frame->height/2-viewY/2) * frame->width + (x+frame->width/2-viewX/2);
+			Glyph *g = &frame->content[fi];
+			if (form) {
 				termSkin skin = *((termSkin*)f->skin);
-				Glyph *g = &(frames[newFrame].content[(fy*frames[newFrame].width)+fx]);
 				g->symbol = skin.symbol;
 				g->fr = skin.r;
 				g->fg = skin.g;
 				g->fb = skin.b;
-				break;
+			} else {
+				*g = empty;
 			}
 		}
 	}
-
-
-		atomic_store_explicit(&renderWriteIndex, newFrame, memory_order_release);
-		//signal redraw
-		setNewRender();
-	}
+	atomic_store_explicit(&renderWriteIndex, newFrame, memory_order_release);
+	//signal redraw
+	setNewRender();
+}
