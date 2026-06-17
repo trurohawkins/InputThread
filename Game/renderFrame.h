@@ -5,7 +5,7 @@
 #include <stdatomic.h>
 #include <stdio.h>
 
-#include "core.h"
+#include "../Core/core.h"
 
 typedef struct {
 	char symbol;

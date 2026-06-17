@@ -1,9 +1,9 @@
-#include "threads.h"
-#include "core.h"
-#include "timeWizard.h"
+#include "Core/threads.h"
+#include "Core/core.h"
+#include "Game/game.h"
 #include "input.h"
 #include "output.h"
-#include "Form/game.h"
+#include "Form/form.h"
 
 int graphics = 1;
 

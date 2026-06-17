@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "core.h"
+#include "Core/core.h"
 
 void initTermInput();
 void setRaw(int state);

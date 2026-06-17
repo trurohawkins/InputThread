@@ -9,8 +9,9 @@
 #include <stdatomic.h>
 #include <stdlib.h>
 
-#include "core.h"
-#include "renderFrame.h"
+#include "Core/core.h"
+#include "Game/renderFrame.h"
+
 extern atomic_int windowResized;
 
 bool initScreen();

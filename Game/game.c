@@ -7,10 +7,10 @@ PollHandler gameTimer = {
 TimeWizard gameWiz;
 int ticksPerSecond = 60;
 bool gameRunning = true;
-int worldX = 30;
-int worldY = 30;
-int viewX = 20;
-int viewY = 10;
+int worldX = 4;
+int worldY = 3;
+int viewX = 4;
+int viewY = 3;
 int screenX = 0;
 int screenY = 0;
 Form *f = 0;
@@ -26,13 +26,25 @@ bool initGame() {
 	makeWorld(worldX, worldY);
 
 	f = makeForm(0);
-	Figure *skin = calloc(1, sizeof(Figure));
+	Sigil *skin = createSigil(f)->data;
 	skin->symbol = '@';
 	skin->r = 128;
 	skin->g = 128;
 	skin->b = 128;
-	f->skin = skin;
-	placeForm(f, 0, 0);
+	/*
+		 for (int x = 0; x < worldX; x++) {
+		 for (int y = 0; y < worldY; y++) {
+		 if (x % 2 == 0 && y % 2 == 0) {
+		 placeForm(f, x, y);
+		 }
+		 }
+		 }
+		 */
+	if (placeForm(f, 2, 1)) {
+		debugWrite("form placed\n");
+	} else {
+		debugWrite("not placed\n");
+	}
 	return true;
 }
 
@@ -57,17 +69,13 @@ void exitGame() {
 int pos = 0;
 float interval = 0.2;
 float counter = 0;
+bool changed = true;
 
 void simulateStep(float delta) {
 	//printf("simulating time %f\n", delta);
-	if (counter + delta >= interval) {
-		counter -= interval;
-		removeForm(f, f->pos[0], f->pos[1]);
-		f->pos[1] = (f->pos[1] + 1) % worldY;
-		placeForm(f, f->pos[0], f->pos[1]);
+	if (changed) {
 		renderMap();
-	} else {
-		counter += delta;
+		changed = false;
 	}
 }
 
@@ -83,6 +91,12 @@ void gameSimulation() {
 	int steps = consumeTicks(&gameWiz);
 	for (int i = 0; i < steps; i++) {
 		simulateStep(gameWiz.dt);
+	}
+}
+
+void move(int xd, int yd) {
+	if (moveForm(f, xd, yd)) {
+		changed = true;	
 	}
 }
 
@@ -104,6 +118,14 @@ void receiveEvent() {
 				gameRunning = false;
 				atomic_store_explicit(&running, false, memory_order_release);
 				wakeEvent();
+			} else if (c == 'w') {
+				move(0, 1);
+			} else if (c == 'a') {
+				move(-1, 0);
+			} else if (c == 's') {
+				move(0, -1);
+			} else if (c == 'd') {
+				move(1, 0);
 			}
 		} else if (se.type == 1) {
 			int data[2];
@@ -118,6 +140,7 @@ void receiveEvent() {
 	}
 }
 
+
 void renderMap() {
 	Glyph empty = {
 		.br = 0,
@@ -131,26 +154,29 @@ void renderMap() {
 	int count = 0;
 	for (int y = 0; y < viewY; y++) {
 		for (int x = 0; x < viewX; x++) {
-			int w = y * theWorld.y + x;
+			int w = y * theWorld.x + x;
 			Cell c = theWorld.map[w];
-			Form *form = NULL;
+			Nub *skin = NULL;
 			for (int i = 0; i < FORMS_PER_CELL; i++) {
 				Form *f = c.within[i];
-				if (f != 0 && f->skin != 0) {
-					form = f;
+				if (f != 0 && f->nub != NULL) {
+					skin = findNub(f, 1);
 					break;
 				}
 			}
 			y = viewY - y - 1;
 			int screeni = (y+screenY/2-viewY/2) * screenX + (x+screenX/2-viewX/2);
+			//int screeni = (y) * screenX + (x);
 			poses[count] = screeni;
 			Glyph *g = &glyphs[count];//frame->content[fi];
-			if (form) {
-				Figure skin = *((Figure*)f->skin);
-				g->symbol = skin.symbol;
-				g->fr = skin.r;
-				g->fg = skin.g;
-				g->fb = skin.b;
+			if (skin) {
+				debugWrite("got skin\n");
+				Sigil *sig = skin->data;
+				//Figure skin = *((Figure*)f->skin);
+				g->symbol = sig->symbol;
+				g->fr = sig->r;
+				g->fg = sig->g;
+				g->fb = sig->b;
 			} else {
 				*g = empty;
 			}

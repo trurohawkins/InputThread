@@ -24,6 +24,8 @@ prod: CFLAGS += $(PROD_CFLAGS)
 prod: LDFLAGS += $(PROD_LDFLAGS)
 prod: $(TARGET)
 
+CD = Core/
+GD = Game/
 FD = Form/
 
 # Linking
@@ -40,13 +42,13 @@ helper.h:
 
 
 # Static lib
-libForm.a: form.o cell.o world.o game.o  
+libForm.a: form.o cell.o world.o game.o timeWizard.o renderFrame.o 
 	ar rs $@ $^
 
-libInput.a: input.o output.o renderFrame.o
+libInput.a: input.o output.o 
 	ar rs $@ $^
 
-libCore.a: core.o threads.o timeWizard.o poll.o
+libCore.a: core.o threads.o  poll.o
 	ar rs $@ $^
 
 # Compiling
@@ -56,17 +58,11 @@ main.o: main.c
 output.o: output.c output.h
 	gcc $(CFLAGS) -c output.c -o $@
 
-renderFrame.o: renderFrame.c renderFrame.h
-	gcc $(CFLAGS) -c renderFrame.c -o $@
-
 input.o: input.c input.h
 	gcc $(CFLAGS) -c input.c -o $@
 
 
 # FORM
-game.o: $(FD)game.c $(FD)game.h
-	gcc $(CFLAGS) -c $(FD)game.c -o $@
-
 form.o: $(FD)form.c $(FD)form.h
 	gcc $(CFLAGS) -c $(FD)form.c -o $@
 
@@ -76,17 +72,27 @@ cell.o: $(FD)cell.c $(FD)cell.h
 world.o: $(FD)world.c $(FD)world.h
 	gcc $(CFLAGS) -c $(FD)world.c -o $@
 
-core.o: core.h core.c helper.h
-	gcc $(CFLAGS) -c core.c -o $@
 
-poll.o: poll.c poll.h
-	gcc $(CFLAGS) -c poll.c -o $@
+#GAME
+game.o: $(GD)game.c $(GD)game.h
+	gcc $(CFLAGS) -c $(GD)game.c -o $@
 
-timeWizard.o: timeWizard.c timeWizard.h
-	gcc $(CFLAGS) -c timeWizard.c -o $@
+renderFrame.o: $(GD)renderFrame.c $(GD)renderFrame.h
+	gcc $(CFLAGS) -c $(GD)renderFrame.c -o $@
 
-threads.o: threads.c threads.h
-	gcc $(CFLAGS) -c threads.c -o $@
+timeWizard.o: $(GD)timeWizard.c $(GD)timeWizard.h
+	gcc $(CFLAGS) -c $(GD)timeWizard.c -o $@
+
+
+#CORE
+core.o: $(CD)core.h $(CD)core.c helper.h
+	gcc $(CFLAGS) -c $(CD)core.c -o $@
+
+poll.o: $(CD)poll.c $(CD)poll.h
+	gcc $(CFLAGS) -c $(CD)poll.c -o $@
+
+threads.o: $(CD)threads.c $(CD)threads.h
+	gcc $(CFLAGS) -c $(CD)threads.c -o $@
 
 
 

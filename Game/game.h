@@ -3,11 +3,11 @@
 
 #include <stdint.h>
 
-#include "../timeWizard.h"
-#include "../core.h"
+#include "../Core/core.h"
+#include "renderFrame.h"
+#include "timeWizard.h"
 
-#include "../renderFrame.h"
-#include "world.h"
+#include "../Form/world.h"
 
 bool initGame();
 void *gameLoop(void *data);

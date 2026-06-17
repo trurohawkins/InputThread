@@ -18,6 +18,7 @@ void freeWorld() {
 		Cell c = theWorld.map[i];
 		for (int j = 0; j < FORMS_PER_CELL; j++) {
 			if (c.within[j] != 0) {
+				debugWrite("got a form\n");
 				addToListSingle(&forms, c.within[j]);
 			}
 		}
@@ -31,6 +32,7 @@ bool placeForm(Form *f, int x, int y) {
 		if (addToCell(f, c)) {
 			f->pos[0] = x;
 			f->pos[1] = y;
+			return true;
 		}
 	}
 	return false;
@@ -43,4 +45,16 @@ bool removeForm(Form *f, int x, int y) {
 	}
 	return false;
 }
+
+bool moveForm(Form *f, int xd, int yd) {
+	int xp = f->pos[0] + xd;
+	int yp = f->pos[1] + yd;
+	if (xp >= 0 && yp >=0 && xp < theWorld.x && yp < theWorld.y) {
+		removeForm(f, f->pos[0], f->pos[1]);
+		placeForm(f, xp, yp);
+		return true;
+	}
+	return false;
+}
+
 
