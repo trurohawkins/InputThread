@@ -34,21 +34,18 @@ int main() {
 	skin->r = 128;
 	skin->g = 128;
 	skin->b = 128;
-	placeForm(f, 2, 1);
+	placeForm(f, worldX/2, worldY/2);
 
-	makePlayerManager();
 
 	Player *p = makePlayer(f, 0, 0);
-	addControl(p, "K0w", moveUp);
-	addControl(p, "K0a", moveLeft);
-	addControl(p, "K0s", moveDown);
-	addControl(p, "K0d", moveRight);
+	addControl(p, "K0W", moveUp);
+	addControl(p, "K0A", moveLeft);
+	addControl(p, "K0S", moveDown);
+	addControl(p, "K0D", moveRight);
 	addPlayer(p);
 
 	runWorld();
 	endWorld();
-	freeWorld();
-	freePlayerManager();
 	return 0;
 }
 

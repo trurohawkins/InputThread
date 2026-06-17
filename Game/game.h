@@ -2,6 +2,7 @@
 #define GAME
 
 #include <stdint.h>
+#include <ctype.h>
 
 #include "../Core/core.h"
 #include "renderFrame.h"
@@ -10,6 +11,7 @@
 
 
 extern void (*gameLoop)(float);
+extern void (*resizeScreen)(int, int);
 
 bool initGame();
 void *runGame(void *data);

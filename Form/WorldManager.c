@@ -15,11 +15,14 @@ bool startWorld(bool graphics) {
 		initScreen();
 	}
 	runGraphics = graphics;
+	makePlayerManager();
+
 	return true;
 }
 
 void runWorld() {
 	gameLoop = &formLoop;
+	resizeScreen = &screenChanged;
 	gameThread = createThread(runGame, NULL, false);
 	outputThread = 0;
 	if (runGraphics > 0) {
@@ -34,6 +37,10 @@ void formLoop(float delta) {
 	renderWorld();
 }
 
+void screenChanged(int x, int y) {
+	worldChanged = true;
+}
+
 bool endWorld() {
 	pthread_join(gameThread, NULL);
 	if (runGraphics > 0) {
@@ -46,6 +53,8 @@ bool endWorld() {
 	if (runGraphics > 0) {
 		exitScreen();
 	}
+	freeWorld();
+	freePlayerManager();
 	return true;
 }
 

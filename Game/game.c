@@ -9,6 +9,7 @@ int ticksPerSecond = 60;
 bool gameRunning = true;
 
 void (*gameLoop)(float) = 0;
+void (*resizeScreen)(int, int) = 0;
 
 bool initGame() {
 	initPollSystem(&gamePoll, &receiveEvent);
@@ -81,7 +82,7 @@ void receiveEvent() {
 				inpReceived ir;
 				ir.input[0] = 'K';
 				ir.input[1] = 48;
-				ir.input[2] = c;
+				ir.input[2] = toupper(c);
 				ir.input[3] = '\0';
 				ir.val = 1;
 				processInput(ir);
@@ -93,6 +94,9 @@ void receiveEvent() {
 				freeRenderFrames();
 			}
 			makeRenderFrames(data[0], data[1]);
+			if (resizeScreen) {
+				resizeScreen(data[0], data[1]);
+			}
 		}
 	}
 }
