@@ -29,6 +29,12 @@ void *runGame(void *data) {
 }
 
 void exitGame() {
+	gameRunning = false;
+	atomic_store_explicit(&running, false, memory_order_release);
+	wakeEvent();
+}
+
+void closeGame() {
 	if (gameTimer.fd = -1) {
 		close (gameTimer.fd);
 	}
@@ -70,9 +76,15 @@ void receiveEvent() {
 			char c = 0;
 			memcpy(&c, se.data, se.size);
 			if (c == 27) {
-				gameRunning = false;
-				atomic_store_explicit(&running, false, memory_order_release);
-				wakeEvent();
+				exitGame();
+			} else {
+				inpReceived ir;
+				ir.input[0] = 'K';
+				ir.input[1] = 48;
+				ir.input[2] = c;
+				ir.input[3] = '\0';
+				ir.val = 1;
+				processInput(ir);
 			}
 		} else if (se.type == 1) {
 			int data[2];

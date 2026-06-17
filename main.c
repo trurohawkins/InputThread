@@ -1,10 +1,32 @@
 #include "Form/WorldManager.h"
-int worldX = 4;
-int worldY = 3;
+int worldX = 40;
+int worldY = 20;
+
+void moveUp(void *form, float val) {
+	if (val == 1) {
+		moveForm(form, 0, 1);
+	}
+}
+void moveDown(void *form, float val) {
+	if (val == 1) {
+		moveForm(form, 0, -1);
+	}
+}
+void moveLeft(void *form, float val) {
+	if (val == 1) {
+		moveForm(form, -1, 0);
+	}
+}
+void moveRight(void *form, float val) {
+	if (val == 1) {
+		moveForm(form, 1, 0);
+	}
+}
 
 int main() {
 	startWorld(true);
 	makeWorld(worldX, worldY);
+	setFrame(worldX, worldY);
 
 	Form *f = makeForm(0);
 	Sigil *skin = createSigil(f)->data;
@@ -12,23 +34,21 @@ int main() {
 	skin->r = 128;
 	skin->g = 128;
 	skin->b = 128;
-	/*
-		 for (int x = 0; x < worldX; x++) {
-		 for (int y = 0; y < worldY; y++) {
-		 if (x % 2 == 0 && y % 2 == 0) {
-		 placeForm(f, x, y);
-		 }
-		 }
-		 }
-		 */
-	if (placeForm(f, 2, 1)) {
-		debugWrite("form placed\n");
-	} else {
-		debugWrite("not placed\n");
-	}
+	placeForm(f, 2, 1);
+
+	makePlayerManager();
+
+	Player *p = makePlayer(f, 0, 0);
+	addControl(p, "K0w", moveUp);
+	addControl(p, "K0a", moveLeft);
+	addControl(p, "K0s", moveDown);
+	addControl(p, "K0d", moveRight);
+	addPlayer(p);
+
 	runWorld();
 	endWorld();
 	freeWorld();
+	freePlayerManager();
 	return 0;
 }
 

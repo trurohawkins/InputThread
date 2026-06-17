@@ -29,13 +29,9 @@ void runWorld() {
 	coreLoop();
 }
 
-bool changed = true;
 
 void formLoop(float delta) {
-	if (changed) {
-		renderWorld();
-		changed = false;
-	}
+	renderWorld();
 }
 
 bool endWorld() {
@@ -45,7 +41,7 @@ bool endWorld() {
 	}
 	
 	exitCore();
-	exitGame();
+	closeGame();
 	exitTermInput();
 	if (runGraphics > 0) {
 		exitScreen();

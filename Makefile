@@ -29,8 +29,8 @@ GD = Game/
 FD = Form/
 
 # Linking
-$(TARGET): helper.h libCore.a libForm.a libInput.a libHelper.a  main.o  
-	gcc main.o -o $@ $(LDFLAGS) libForm.a libInput.a libCore.a libHelper.a
+$(TARGET): helper.h libForm.a libGame.a libInput.a  libCore.a libHelper.a  main.o  
+	gcc main.o -o $@ $(LDFLAGS) libForm.a libGame.a libInput.a libCore.a libHelper.a -lm
 
 libHelper.a:
 	$(MAKE) -C ../FormNetwork/
@@ -42,7 +42,10 @@ helper.h:
 
 
 # Static lib
-libForm.a: form.o cell.o world.o WorldManager.o game.o timeWizard.o renderFrame.o 
+libForm.a: form.o cell.o world.o WorldManager.o  
+	ar rs $@ $^
+
+libGame.a: game.o timeWizard.o renderFrame.o player.o inputMap.o
 	ar rs $@ $^
 
 libInput.a: input.o output.o 
@@ -85,6 +88,11 @@ renderFrame.o: $(GD)renderFrame.c $(GD)renderFrame.h
 timeWizard.o: $(GD)timeWizard.c $(GD)timeWizard.h
 	gcc $(CFLAGS) -c $(GD)timeWizard.c -o $@
 
+player.o: $(GD)player.c $(GD)player.h $(GD)playerManager.c $(GD)playerManager.h
+	gcc $(CFLAGS) -c $(GD)player.c -o $@
+
+inputMap.o: $(GD)inputMap.c $(GD)inputMap.h
+	gcc $(CFLAGS) -c $(GD)inputMap.c -o $@
 
 #CORE
 core.o: $(CD)core.h $(CD)core.c helper.h
