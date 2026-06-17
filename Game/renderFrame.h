@@ -20,19 +20,6 @@ typedef struct {
 } Glyph;
 
 typedef struct {
-	char symbol;
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-} Figure;
-
-typedef struct {
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-} Ground;
-
-typedef struct {
 	int width;
 	int height;
 	Glyph *content;
@@ -44,6 +31,9 @@ extern atomic_int renderWriteIndex;
 extern atomic_int renderReadIndex;
 
 extern atomic_int newRender;
+
+extern int screenX;
+extern int screenY;
 
 void freeRenderFrames();
 void makeRenderFrames(int width, int height);

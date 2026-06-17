@@ -7,6 +7,8 @@ atomic_int renderReadIndex;
 atomic_int newRender = 0;
 atomic_int windowResized = 0;
 
+int screenX = 0;
+int screenY = 0;
 
 void freeRenderFrames() {
 	debugWrite("freeing render frames\n");
@@ -22,6 +24,8 @@ void makeRenderFrames(int width, int height) {
 		frames[i].height = height;
 		frames[i].content = calloc(width * height, sizeof(Glyph));
 	}
+	screenX = width;
+	screenY = height;
 }
 
 void renderFrame(Glyph *glyphs, int *poses, int glyphCount) {

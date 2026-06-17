@@ -42,7 +42,7 @@ helper.h:
 
 
 # Static lib
-libForm.a: form.o cell.o world.o game.o timeWizard.o renderFrame.o 
+libForm.a: form.o cell.o world.o WorldManager.o game.o timeWizard.o renderFrame.o 
 	ar rs $@ $^
 
 libInput.a: input.o output.o 
@@ -72,6 +72,8 @@ cell.o: $(FD)cell.c $(FD)cell.h
 world.o: $(FD)world.c $(FD)world.h
 	gcc $(CFLAGS) -c $(FD)world.c -o $@
 
+WorldManager.o: $(FD)WorldManager.c $(FD)WorldManager.h
+	gcc $(CFLAGS) -c $(FD)WorldManager.c -o $@
 
 #GAME
 game.o: $(GD)game.c $(GD)game.h

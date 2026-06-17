@@ -1,4 +1,6 @@
 #include "world.h"
+int viewX = 4;
+int viewY = 3;
 
 World theWorld = {
 	.x = 0,
@@ -57,4 +59,50 @@ bool moveForm(Form *f, int xd, int yd) {
 	return false;
 }
 
+void renderWorld() {
+	Glyph empty = {
+		.br = 0,
+		.bg = 0,
+		.bb = 0,
+
+		.symbol = ' '
+	};
+	Glyph *glyphs = calloc(viewX * viewY, sizeof(Glyph));
+	int *poses = calloc(viewX * viewY, sizeof(int));
+	int count = 0;
+	for (int y = 0; y < viewY; y++) {
+		for (int x = 0; x < viewX; x++) {
+			int w = y * theWorld.x + x;
+			Cell c = theWorld.map[w];
+			Nub *skin = NULL;
+			for (int i = 0; i < FORMS_PER_CELL; i++) {
+				Form *f = c.within[i];
+				if (f != 0 && f->nub != NULL) {
+					skin = findNub(f, 1);
+					break;
+				}
+			}
+			y = viewY - y - 1;
+			int screeni = (y+screenY/2-viewY/2) * screenX + (x+screenX/2-viewX/2);
+			//int screeni = (y) * screenX + (x);
+			poses[count] = screeni;
+			Glyph *g = &glyphs[count];//frame->content[fi];
+			if (skin) {
+				debugWrite("got skin\n");
+				Sigil *sig = skin->data;
+				//Figure skin = *((Figure*)f->skin);
+				g->symbol = sig->symbol;
+				g->fr = sig->r;
+				g->fg = sig->g;
+				g->fb = sig->b;
+			} else {
+				*g = empty;
+			}
+			count++;
+		}
+	}
+	renderFrame(glyphs, poses, viewX * viewY);
+	free(glyphs);
+	free(poses);
+}
 
