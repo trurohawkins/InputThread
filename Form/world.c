@@ -1,6 +1,6 @@
 #include "world.h"
-int frameX = 4;
-int frameY = 3;
+int frameDim[2] = {0, 0};
+int framePos[2] = {0, 0};
 bool worldChanged = false;
 
 World theWorld = {
@@ -15,9 +15,24 @@ void makeWorld(int x, int y) {
 	theWorld.map = calloc(x * y, sizeof(Cell));
 }
 
-void setFrame(int x, int y) {
-	frameX = x;
-	frameY = y;
+void setFrameDimension(int x, int y) {
+	frameDim[0] = x;
+	frameDim[1] = y;
+	worldChanged = true;
+}
+
+void setFramePosition(int x, int y) {
+	if (x >= 0 && x <= theWorld.x - frameDim[0]) {
+		framePos[0] = x;
+	}
+	if (y >= 0 && y <= theWorld.y - frameDim[1]) {
+		framePos[1] = y;
+	}
+	worldChanged = true;
+}
+
+void moveFrame(int xd, int yd) {
+	setFramePosition(framePos[0] + xd, framePos[1] + yd);
 }
 
 void freeWorld() {
@@ -26,7 +41,6 @@ void freeWorld() {
 		Cell c = theWorld.map[i];
 		for (int j = 0; j < FORMS_PER_CELL; j++) {
 			if (c.within[j] != 0) {
-				debugWrite("got a form\n");
 				addToListSingle(&forms, c.within[j]);
 			}
 		}
@@ -79,12 +93,14 @@ void renderWorld() {
 
 		.symbol = ' '
 	};
-	Glyph *glyphs = calloc(frameX * frameY, sizeof(Glyph));
-	int *poses = calloc(frameX * frameY, sizeof(int));
+	Glyph *glyphs = calloc(frameDim[0] * frameDim[1], sizeof(Glyph));
+	int *poses = calloc(frameDim[0] * frameDim[1], sizeof(int));
 	int count = 0;
-	for (int y = 0; y < frameY; y++) {
-		for (int x = 0; x < frameX; x++) {
-			int w = y * theWorld.x + x;
+	for (int y = 0; y < frameDim[1]; y++) {
+		for (int x = 0; x < frameDim[0]; x++) {
+			int xp = x + framePos[0];
+			int yp = y + framePos[1];
+			int w = yp * theWorld.x + xp;
 			Cell c = theWorld.map[w];
 			Nub *skin = NULL;
 			for (int i = 0; i < FORMS_PER_CELL; i++) {
@@ -94,9 +110,9 @@ void renderWorld() {
 					break;
 				}
 			}
-			y = frameY - y - 1;
-			int screeni = (y+screenY/2-frameY/2) * screenX + (x+screenX/2-frameX/2);
-			//int screeni = (y) * screenX + (x);
+			y = frameDim[1] - y - 1;
+			int screeni = (y+screenY/2-frameDim[1]/2) * screenX + (x+screenX/2-frameDim[0]/2);
+			//int screeni = (yp) * screenX + (xp);
 			poses[count] = screeni;
 			Glyph *g = &glyphs[count];//frame->content[fi];
 			if (skin) {
@@ -113,7 +129,7 @@ void renderWorld() {
 			count++;
 		}
 	}
-	renderFrame(glyphs, poses, frameX * frameY);
+	renderFrame(glyphs, poses, frameDim[0] * frameDim[1]);
 	free(glyphs);
 	free(poses);
 	worldChanged = false;

@@ -15,7 +15,9 @@ extern World theWorld;
 extern bool worldChanged;
 
 void makeWorld(int x, int y);
-void setFrame(int x, int y);
+void setFrameDimension(int x, int y);
+void setFramePosition(int x, int y);
+void moveFrame(int xd, int yd);
 void freeWorld();
 bool placeForm(Form *f, int x, int y);
 bool removeForm(Form *f, int x, int y);

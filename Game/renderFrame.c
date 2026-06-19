@@ -17,6 +17,7 @@ void freeRenderFrames() {
 }
 
 void makeRenderFrames(int width, int height) {
+	printf("making renderframes %i, %i\n", width, height);
 	for (int i = 0; i < NUM_FRAMES; i++) {
 		frames[i].width = width;
 		frames[i].height = height;
@@ -47,7 +48,9 @@ void renderFrame(Glyph *glyphs, int *poses, int glyphCount) {
 	}
 	for (int i = 0; i < glyphCount; i++) {
 		int s = poses[i];
-		frame->content[s] = glyphs[i];
+		if (s >= 0 && s < frame->width * frame->height) {
+			frame->content[s] = glyphs[i];
+		}
 	}
 	
 	atomic_store_explicit(&renderWriteIndex, newFrame, memory_order_release);
