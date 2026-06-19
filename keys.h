@@ -30,5 +30,6 @@ static KeyState keys[KEY_COUNT];
 uint64_t nowMS();
 void onKeyEvent(char c);
 void updateKeys();
+void makeKeyEvent(char c, float val);
 void endKeyFrame();
 #endif

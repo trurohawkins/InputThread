@@ -28,14 +28,19 @@ void updateKeys() {
 			keys[i].heldMS = now - keys[i].lastChange;
 			if (now - keys[i].lastChange > RELEASE_TIMEOUT) {
 				keys[i].down = false;
-				KeyEvent ke = {
-					.key = i,
-					.val = 0,
-				};
-				pushEvent(STDIN_FILENO, &ke, sizeof(KeyEvent));
+				makeKeyEvent(i, 0);
 			}
 		}
 	}
+}
+
+void makeKeyEvent(char c, float val) {
+	KeyEvent ke = {
+		.key = c,
+		.val = val,
+	};
+	pushEvent(STDIN_FILENO, &ke, sizeof(KeyEvent));
+	//printf("key: %c, val: %f\n", c, val);
 }
 
 void endKeyFrame() {

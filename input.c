@@ -46,11 +46,7 @@ void checkInput() {
 		ssize_t r = read(STDIN_FILENO, &c, 1);
 		if (r == 1) {
 			onKeyEvent(c);
-			KeyEvent ke = {
-				.key = c,
-				.val = 1,
-			};
-			pushEvent(STDIN_FILENO, &ke, sizeof(KeyEvent));
+			makeKeyEvent(c, 1);
 		} else if (r == -1 && errno == EAGAIN) {
 			break;
 		} else {
