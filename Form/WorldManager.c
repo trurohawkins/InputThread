@@ -34,7 +34,9 @@ void runWorld() {
 
 
 void formLoop(float delta) {
-	renderWorld();
+	if (runGraphics) {
+		renderWorld();
+	}
 }
 
 void screenChanged(int x, int y) {

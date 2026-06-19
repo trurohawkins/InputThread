@@ -5,6 +5,9 @@
 #include <ctype.h>
 
 #include "../Core/core.h"
+#include "../keys.h"
+
+
 #include "renderFrame.h"
 #include "timeWizard.h"
 #include "player.h"

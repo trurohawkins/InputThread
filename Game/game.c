@@ -74,18 +74,12 @@ void receiveEvent() {
 	SystemEvent se;
 	while (popEvent(&se)) {
 		if (se.type == STDIN_FILENO) {
-			char c = 0;
-			memcpy(&c, se.data, se.size);
-			if (c == 27) {
+			KeyEvent ke;
+			memcpy(&ke, se.data, se.size);
+			if (ke.key == 27 && ke.val == 1) {
 				exitGame();
 			} else {
-				inpReceived ir;
-				ir.input[0] = 'K';
-				ir.input[1] = 48;
-				ir.input[2] = toupper(c);
-				ir.input[3] = '\0';
-				ir.val = 1;
-				processInput(ir);
+				makeKeyInput(ke.key, ke.val);
 			}
 		} else if (se.type == 1) {
 			int data[2];

@@ -1,12 +1,19 @@
 #include "input.h"
 
 PollHandler inputHandler;
+PollHandler inputTimer = {
+	.fd = -1
+};
 
 void initTermInput() {
 	setRaw(1);
 	inputHandler.fd = STDIN_FILENO;
 	inputHandler.func = &checkInput;
 	addFdToCore(&inputHandler);
+	
+	initTimerFd(&inputTimer, 120, &updateKeys);
+	addFdToCore(&inputTimer);
+
 	int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
 	fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
 }
@@ -38,7 +45,12 @@ void checkInput() {
 	while (true) {
 		ssize_t r = read(STDIN_FILENO, &c, 1);
 		if (r == 1) {
-			pushEvent(STDIN_FILENO, &c, sizeof(c));
+			onKeyEvent(c);
+			KeyEvent ke = {
+				.key = c,
+				.val = 1,
+			};
+			pushEvent(STDIN_FILENO, &ke, sizeof(KeyEvent));
 		} else if (r == -1 && errno == EAGAIN) {
 			break;
 		} else {

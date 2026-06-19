@@ -34,40 +34,40 @@ void removePlayer(Player *p) {
 	removeFromList(&(PM->playerList), p);
 }
 /*
-void processKeys(bool paused) {
-	linkedList *cur = getCurInput();
-	if (cur != NULL && cur->data != NULL) {
-		while (cur != NULL) {
-			inpReceived *ir = (inpReceived*)cur->data;
-			char *inp = ir->input;
-			//printf("input: %s\n", inp);
-			linkedList *curPlayer = PM->playerList;
+	 void processKeys(bool paused) {
+	 linkedList *cur = getCurInput();
+	 if (cur != NULL && cur->data != NULL) {
+	 while (cur != NULL) {
+	 inpReceived *ir = (inpReceived*)cur->data;
+	 char *inp = ir->input;
+//printf("input: %s\n", inp);
+linkedList *curPlayer = PM->playerList;
 
-			while (curPlayer != NULL) {
-				if(curPlayer->data != NULL) {
-					Player *p = (Player*)(curPlayer->data);
-					if(p->active && (!paused || !p->pausePlayer)) {// && p->self) { 
-						linkedList *con = p->controls;
-						while (con != NULL) {
-							InpMap *tmp = (InpMap*)con->data;
-							char *c = tmp->input;
-							if (strCompare(inp, c) == true) {
-								//printf("pressed %s matches function %s\n", inp, c);
-								tmp->func(p->self, ir->val);
-								break;
-							} 
-							con = con->next;
-						}
-					}
+while (curPlayer != NULL) {
+if(curPlayer->data != NULL) {
+Player *p = (Player*)(curPlayer->data);
+if(p->active && (!paused || !p->pausePlayer)) {// && p->self) { 
+linkedList *con = p->controls;
+while (con != NULL) {
+InpMap *tmp = (InpMap*)con->data;
+char *c = tmp->input;
+if (strCompare(inp, c) == true) {
+//printf("pressed %s matches function %s\n", inp, c);
+tmp->func(p->self, ir->val);
+break;
+} 
+con = con->next;
+}
+}
 
-				}
-				curPlayer = curPlayer->next;
-			}	
+}
+curPlayer = curPlayer->next;
+}	
 
-			cur = cur->next;
-		}
-	}
-	clearInput();
+cur = cur->next;
+}
+}
+clearInput();
 }
 */
 void processInput(inpReceived ir) {
@@ -101,6 +101,17 @@ void processInput(inpReceived ir) {
 	}	
 
 }
+
+void makeKeyInput(char c, float val) {
+	inpReceived ir;
+	ir.input[0] = 'K';
+	ir.input[1] = 48;
+	ir.input[2] = toupper(c);
+	ir.input[3] = '\0';
+	ir.val = val;
+	processInput(ir);
+}
+
 
 void freePlayerManager() {
 	linkedList *cur = PM->playerList;

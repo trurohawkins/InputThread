@@ -1,6 +1,7 @@
 #ifndef PLAYER
 #define PLAYER
 #include "../helper.h"
+#include <ctype.h>
 #include "inputMap.h"
 
 typedef struct Player {

@@ -9,6 +9,7 @@
 #include <errno.h>
 
 #include "Core/core.h"
+#include "keys.h"
 
 void initTermInput();
 void setRaw(int state);

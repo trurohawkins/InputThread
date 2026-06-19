@@ -45,10 +45,10 @@ helper.h:
 libForm.a: form.o cell.o world.o WorldManager.o  
 	ar rs $@ $^
 
-libGame.a: game.o timeWizard.o renderFrame.o player.o inputMap.o
+libGame.a: game.o timeWizard.o renderFrame.o player.o inputMap.o   
 	ar rs $@ $^
 
-libInput.a: input.o output.o 
+libInput.a: input.o output.o keys.o 
 	ar rs $@ $^
 
 libCore.a: core.o threads.o  poll.o
@@ -61,9 +61,12 @@ main.o: main.c
 output.o: output.c output.h
 	gcc $(CFLAGS) -c output.c -o $@
 
+# Terminal input
 input.o: input.c input.h
 	gcc $(CFLAGS) -c input.c -o $@
 
+keys.o: keys.c keys.h
+	gcc $(CFLAGS) -c keys.c -o $@
 
 # FORM
 form.o: $(FD)form.c $(FD)form.h

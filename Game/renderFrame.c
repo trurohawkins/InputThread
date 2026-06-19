@@ -11,14 +11,12 @@ int screenX = 0;
 int screenY = 0;
 
 void freeRenderFrames() {
-	debugWrite("freeing render frames\n");
 	for (int i = 0; i < NUM_FRAMES; i++) {
 		free(frames[i].content);
 	}
 }
 
 void makeRenderFrames(int width, int height) {
-	debugWrite("allocating renderframes\n");
 	for (int i = 0; i < NUM_FRAMES; i++) {
 		frames[i].width = width;
 		frames[i].height = height;

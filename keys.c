@@ -1,0 +1,46 @@
+#include "keys.h"
+
+uint64_t nowMS() {
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (uint64_t)(ts.tv_sec * 1000ULL + ts.tv_nsec / 1000000ULL);
+}
+
+void onKeyEvent(char c) {
+	uint8_t k = c;
+	uint64_t now = nowMS();
+	if (!keys[k].down) {
+		//first press
+		keys[k].down = true;
+		keys[k].heldMS = 0;
+	} else {
+		//repeat from OS -> ignore as press
+		keys[k].heldMS = now - keys[k].lastChange;
+	}
+	keys[k].lastChange = now;
+}
+
+void updateKeys() {
+	uint64_t now = nowMS();
+
+	for (int i = 0; i < KEY_COUNT; i++) {
+		if (keys[i].down) {
+			keys[i].heldMS = now - keys[i].lastChange;
+			if (now - keys[i].lastChange > RELEASE_TIMEOUT) {
+				keys[i].down = false;
+				KeyEvent ke = {
+					.key = i,
+					.val = 0,
+				};
+				pushEvent(STDIN_FILENO, &ke, sizeof(KeyEvent));
+			}
+		}
+	}
+}
+
+void endKeyFrame() {
+	for (int i = 0; i < KEY_COUNT; i++) {
+		keys[i].pressed = false;
+		keys[i].released = false;
+	}
+}
