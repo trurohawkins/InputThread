@@ -12,10 +12,6 @@ void onKeyEvent(char c) {
 	if (!keys[k].down) {
 		//first press
 		keys[k].down = true;
-		keys[k].heldMS = 0;
-	} else {
-		//repeat from OS -> ignore as press
-		keys[k].heldMS = now - keys[k].lastChange;
 	}
 	keys[k].lastChange = now;
 }
@@ -25,7 +21,6 @@ void updateKeys() {
 
 	for (int i = 0; i < KEY_COUNT; i++) {
 		if (keys[i].down) {
-			keys[i].heldMS = now - keys[i].lastChange;
 			if (now - keys[i].lastChange > RELEASE_TIMEOUT) {
 				keys[i].down = false;
 				makeKeyEvent(i, 0);

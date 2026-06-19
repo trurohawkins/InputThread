@@ -2,6 +2,7 @@
 
 Nub *createSigil(Form *f) {
 	Nub *sigil = growNub(f);
+	sigil->owned = true;
 	sigil->type = 1;
 	sigil->data = calloc(1, sizeof(Sigil));
 	return sigil;

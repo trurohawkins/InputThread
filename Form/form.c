@@ -10,7 +10,13 @@ Nub *growNub(Form *f) {
 	Nub *nub = calloc(1, sizeof(Nub));
 	nub->type = 0;
 	nub->data = f;
-	f->nub = nub;
+	nub->owned = false;
+	// find empty nub to attach to
+	Nub **tail = &f->nub;
+	while (*tail) {
+		tail = &(*tail)->nub;
+	}
+	*tail = nub;
 	return nub;
 }
 
@@ -25,15 +31,44 @@ Nub *findNub(Form *f, int type) {
 	return nub;
 }
 
+Actor *makeFormActor(Form *f) {
+	Nub *a = growNub(f);
+	a->type = 2;
+	Actor *actor = makeActor(f);
+	a->data = actor;
+	return actor;
+}
+
 void freeForm(void *form) {
-	debugWrite("freeing form");
 	Form *f = form;
-	if (f->nub) {
-		debugWrite("freeing nub\n");
-		free(f->nub->data);
-		free(f->nub);
+	Nub *n = f->nub;
+	while (n) {
+		Nub *next = n->nub;
+		freeNub(n);
+		n = next;
 	}
 	free(f);
+}
+
+void freeNub(void *nub) {
+	Nub *n = nub;
+	if (n->owned) {
+		free(n->data);
+	}
+	free(n);
+}
+
+void printForm(Form *f) {
+	printf("FORM %d - %p:\n", f->id, f);
+	printf("	pos: (%i, %i)\n", f->pos[0], f->pos[1]);
+	if (f->nub) {
+		printf("	nubs:\n");
+		Nub *n = f->nub;
+		while (n) {
+			printf("		nub #%d\n", n->type);
+			n = n->nub;
+		}
+	}
 }
 
 #include "sigil.c"

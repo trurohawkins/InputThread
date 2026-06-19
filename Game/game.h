@@ -11,6 +11,7 @@
 #include "renderFrame.h"
 #include "timeWizard.h"
 #include "player.h"
+#include "Actor/actor.h"
 
 
 extern void (*gameLoop)(float);

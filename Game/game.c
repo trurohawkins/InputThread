@@ -19,6 +19,9 @@ bool initGame() {
 
 	initTimeWizard(&gameWiz, ticksPerSecond);
 
+	makeActorList();
+	makePlayerManager();
+
 	return true;
 }
 
@@ -43,6 +46,8 @@ void closeGame() {
 	if (frames[0].content != 0) {
 		freeRenderFrames();
 	}
+	freePlayerManager();
+	deleteActorList();
 }
 
 void gameSimulation() {
@@ -57,6 +62,7 @@ void gameSimulation() {
 	int steps = consumeTicks(&gameWiz);
 	if (gameLoop) {
 		for (int i = 0; i < steps; i++) {
+			actorListDo();
 			gameLoop(gameWiz.dt);
 		}
 	}

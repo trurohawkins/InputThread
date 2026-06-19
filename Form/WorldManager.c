@@ -15,7 +15,6 @@ bool startWorld(bool graphics) {
 		initScreen();
 	}
 	runGraphics = graphics;
-	makePlayerManager();
 
 	return true;
 }
@@ -56,7 +55,6 @@ bool endWorld() {
 		exitScreen();
 	}
 	freeWorld();
-	freePlayerManager();
 	return true;
 }
 
