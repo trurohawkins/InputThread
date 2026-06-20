@@ -16,6 +16,7 @@ int move(void *form, Action *act) {
 	if (mv->speedCounter >= mv->speed) {
 		if (mv->moveX != 0 || mv->moveY != 0) {
 			moveForm(f, mv->moveX, mv->moveY);
+			setFramePosition(f->pos[0], f->pos[1]);
 		}
 		mv->speedCounter = 0;
 	} else {
@@ -98,11 +99,12 @@ int main() {
 	startWorld(true);
 	makeWorld(worldX, worldY);
 	setFrameDimension(20, 10);
-	setFramePosition(0, 0);
+	setFramePosition(worldX/2, worldY/2);
 
 	Form *f = makeForm(0);
 	Sigil *skin = createSigil(f)->data;
 	skin->symbol = '@';
+	skin->figure = true;
 	skin->r = 128;
 	skin->g = 128;
 	skin->b = 128;
@@ -129,7 +131,27 @@ int main() {
 	addControl(p, "K0L", moveFrameRight);
 	addPlayer(p);
 
-	placeForm(f, 0, 0);//worldX/2, worldY/2);
+	placeForm(f, worldX/2, worldY/2);
+
+	Form *checker0 = makeForm(1);
+	Sigil *chk0 = createSigil(checker0)->data;
+	chk0->r = 0;
+	chk0->g = 64;
+	chk0->b = 0;
+	Form *checker1 = makeForm(1);
+	Sigil *chk1 = createSigil(checker1)->data;
+	chk1->r = 0;
+	chk1->g = 0;
+	chk1->b = 64;
+	for (int x = 0; x < worldX; x++) {
+		for (int y = 0; y < worldY; y++) {
+			if (randPercent() > 0.5) {
+				placeForm(checker0, x ,y);
+			} else {
+				placeForm(checker1, x, y);
+			}
+		}
+	}
 	printForm(f);
 	runWorld();
 	endWorld();

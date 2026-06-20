@@ -72,9 +72,6 @@ clearInput();
 */
 void processInput(inpReceived ir) {
 	char *inp = ir.input;
-	char buff[100];
-	sprintf(buff, "processing string %c%c%c\n", ir.input[0], ir.input[1], ir.input[2]);
-	debugWrite(buff);
 	//printf("input: %s\n", inp);
 	linkedList *curPlayer = PM->playerList;
 
@@ -87,8 +84,6 @@ void processInput(inpReceived ir) {
 					InpMap *tmp = (InpMap*)con->data;
 					char *c = tmp->input;
 					if (strCompare(inp, c) == true) {
-						sprintf(buff,"pressed %s matches function %s\n", inp, c);
-						debugWrite(buff);
 						tmp->func(p->self, ir.val);
 						break;
 					} 

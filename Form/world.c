@@ -22,17 +22,17 @@ void setFrameDimension(int x, int y) {
 }
 
 void setFramePosition(int x, int y) {
-	if (x >= 0 && x <= theWorld.x - frameDim[0]) {
-		framePos[0] = x;
+	int oldX = framePos[0];
+	int oldY = framePos[1];
+	framePos[0] = clamp(x - frameDim[0]/2, 0, theWorld.x - frameDim[0]);
+	framePos[1] = clamp(y - frameDim[1]/2, 0, theWorld.y - frameDim[1]);
+	if (oldX != framePos[0] || oldY != framePos[1]) {
+		worldChanged = true;
 	}
-	if (y >= 0 && y <= theWorld.y - frameDim[1]) {
-		framePos[1] = y;
-	}
-	worldChanged = true;
 }
 
 void moveFrame(int xd, int yd) {
-	setFramePosition(framePos[0] + xd, framePos[1] + yd);
+	setFramePosition(framePos[0] + frameDim[0]/2  + xd, framePos[1] + frameDim[1] / 2 + yd);
 }
 
 void freeWorld() {
@@ -102,12 +102,20 @@ void renderWorld() {
 			int yp = y + framePos[1];
 			int w = yp * theWorld.x + xp;
 			Cell c = theWorld.map[w];
-			Nub *skin = NULL;
+			Sigil *ground = NULL;
+			Sigil *figure = NULL;
 			for (int i = 0; i < FORMS_PER_CELL; i++) {
 				Form *f = c.within[i];
 				if (f != 0 && f->nub != NULL) {
-					skin = findNub(f, 1);
-					break;
+					Nub *skin = findNub(f, 1);
+					if (skin) {
+						Sigil *sig = skin->data;
+						if (sig->figure) {
+							figure = sig;
+						} else {
+							ground = sig;
+						}
+					}
 				}
 			}
 			y = frameDim[1] - y - 1;
@@ -115,16 +123,22 @@ void renderWorld() {
 			//int screeni = (yp) * screenX + (xp);
 			poses[count] = screeni;
 			Glyph *g = &glyphs[count];//frame->content[fi];
-			if (skin) {
-				debugWrite("got skin\n");
-				Sigil *sig = skin->data;
-				//Figure skin = *((Figure*)f->skin);
-				g->symbol = sig->symbol;
-				g->fr = sig->r;
-				g->fg = sig->g;
-				g->fb = sig->b;
+			if (figure) {
+				g->symbol = figure->symbol;
+				g->fr = figure->r;
+				g->fg = figure->g;
+				g->fb = figure->b;
 			} else {
-				*g = empty;
+				g->symbol = empty.symbol;
+			}
+			if (ground) {
+				g->br = ground->r;
+				g->bg = ground->g;
+				g->bb = ground->b;
+			} else {
+				g->br = empty.br;
+				g->bg = empty.bg;
+				g->bb = empty.bb;
 			}
 			count++;
 		}
